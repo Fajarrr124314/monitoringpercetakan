@@ -52,10 +52,24 @@ export function NotaHtml({ pages }: { pages: NotaPage[] }) {
             <div
               style={{
                 position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "80pt", fontWeight: 700, color: "rgb(225 29 72 / 0.22)", transform: "rotate(-18deg)", pointerEvents: "none",
+                pointerEvents: "none",
               }}
             >
-              {p.watermark}
+              <div
+                style={{
+                  fontSize: "64pt",
+                  fontWeight: 900,
+                  letterSpacing: "6px",
+                  color: p.watermark === "LUNAS" ? "rgb(5 150 105 / 0.25)" : "rgb(225 29 72 / 0.22)",
+                  border: p.watermark === "LUNAS" ? "6px solid rgb(5 150 105 / 0.3)" : "6px solid rgb(225 29 72 / 0.25)",
+                  borderRadius: "14px",
+                  padding: "4px 28px",
+                  transform: "rotate(-16deg)",
+                  textTransform: "uppercase",
+                }}
+              >
+                {p.watermark}
+              </div>
             </div>
           )}
         </div>

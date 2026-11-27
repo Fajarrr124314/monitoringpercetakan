@@ -161,3 +161,108 @@ export async function deleteFileAction(id: string, fileId: string, path: string)
   revalidatePath(`/orders/${id}`);
   return { ok: "File dihapus" };
 }
+
+/**
+ * Hapus order secara permanen (otomatis cascade ke item, file, dan log)
+ */
+export async function deleteOrderAction(id: string): Promise<FormState> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("orders").delete().eq("id", id);
+  if (error) return { error: friendlyError(error, "Gagal menghapus order") };
+
+  revalidatePath("/orders");
+  revalidatePath("/dashboard");
+  return { ok: "Order berhasil dihapus" };
+}
+
+/**
+ * Pelunasan Cepat 1-Klik untuk Pihak Yogya / Kasir
+ */
+export async function quickSettleOrderAction(id: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  const supabase = await createClient();
+
+  // Ambil data order saat ini
+  const { data: order, error: fetchErr } = await supabase
+    .from("orders")
+    .select("total, down_payment, cash_paid, noncash_paid, status")
+    .eq("id", id)
+    .single();
+
+  if (fetchErr || !order) return { error: "Order tidak ditemukan" };
+
+  const actor = String(formData.get("actor") ?? "Pihak Yogya").trim();
+  const ref = String(formData.get("payment_ref") ?? "Transfer Pelunasan Yogya").trim();
+  const method = String(formData.get("method") ?? "noncash"); // noncash atau cash
+
+  const total = Number(order.total) || 0;
+  const currentPaid = (Number(order.down_payment) || 0) + (Number(order.cash_paid) || 0) + (Number(order.noncash_paid) || 0);
+  const remaining = Math.max(0, total - currentPaid);
+
+  let newCash = Number(order.cash_paid) || 0;
+  let newNoncash = Number(order.noncash_paid) || 0;
+
+  if (method === "cash") {
+    newCash += remaining;
+  } else {
+    newNoncash += remaining;
+  }
+
+  const { error } = await supabase.rpc("record_payment", {
+    p_order_id: id,
+    p_down_payment: Number(order.down_payment) || 0,
+    p_cash: newCash,
+    p_noncash: newNoncash,
+    p_ref: ref,
+    p_note: `Dinyatakan LUNAS oleh ${actor} (Sisa ${remaining.toLocaleString("id-ID")})`,
+    p_actor: actor,
+  });
+
+  if (error) return { error: friendlyError(error, "Gagal mencatat pelunasan") };
+
+  revalidatePath(`/orders/${id}`);
+  revalidatePath("/orders");
+  revalidatePath("/dashboard");
+  return { ok: "Status berhasil ditandai LUNAS!" };
+}
+
+/**
+ * Pelunasan Kolektif untuk Seluruh Order dalam Siklus 15 Hari
+ */
+export async function settleCycleOrdersAction(startDate: string, endDate: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  const supabase = await createClient();
+  const actor = String(formData.get("actor") ?? "Pihak Yogya").trim();
+  const ref = String(formData.get("payment_ref") ?? `Transfer Siklus ${startDate} s/d ${endDate}`).trim();
+
+  // Ambil semua order aktif di siklus ini
+  const { data: orders, error: fetchErr } = await supabase
+    .from("orders")
+    .select("id, total, down_payment, cash_paid, noncash_paid")
+    .gte("order_date", startDate)
+    .lte("order_date", endDate)
+    .neq("status", "batal");
+
+  if (fetchErr || !orders) return { error: "Gagal mengambil data order siklus" };
+
+  for (const o of orders) {
+    const total = Number(o.total) || 0;
+    const paid = (Number(o.down_payment) || 0) + (Number(o.cash_paid) || 0) + (Number(o.noncash_paid) || 0);
+    const remaining = total - paid;
+
+    if (remaining > 0) {
+      const newNoncash = (Number(o.noncash_paid) || 0) + remaining;
+      await supabase.rpc("record_payment", {
+        p_order_id: o.id,
+        p_down_payment: Number(o.down_payment) || 0,
+        p_cash: Number(o.cash_paid) || 0,
+        p_noncash: newNoncash,
+        p_ref: ref,
+        p_note: `Pelunasan kolektif siklus 15 hari oleh ${actor}`,
+        p_actor: actor,
+      });
+    }
+  }
+
+  revalidatePath("/orders");
+  revalidatePath("/dashboard");
+  return { ok: "Seluruh order dalam siklus 15 hari berhasil ditandai LUNAS!" };
+}

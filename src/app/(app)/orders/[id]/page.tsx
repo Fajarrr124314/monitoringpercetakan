@@ -11,7 +11,8 @@ import { ActionForm, SubmitButton } from "@/components/form";
 import { NotaHtml } from "@/components/nota-html";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { PayBadge, StatusBadge } from "@/components/status-badge";
-import { addCommentAction, deleteFileAction, recordPaymentAction, setStatusAction, uploadFileAction } from "../actions";
+import { addCommentAction, deleteFileAction, deleteOrderAction, quickSettleOrderAction, recordPaymentAction, setStatusAction, uploadFileAction } from "../actions";
+import { CheckCircle2, CreditCard, FileText, ArrowLeft, Trash2 } from "lucide-react";
 
 export const metadata: Metadata = { title: "Detail Order" };
 
@@ -49,23 +50,87 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
+            <Link href="/orders" className="text-slate-400 hover:text-slate-700 mr-1" title="Kembali ke Daftar Order">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
             <h1 className="page-title font-mono">{order.order_no ?? "(Draft)"}</h1>
             <StatusBadge status={order.status} />
             <PayBadge label={pay.label} />
           </div>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 mt-0.5">
             Dibuat {dateTime(order.created_at)} · Karyawan: <b>{order.creator_name || "-"}</b>
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {editable && <Link href={`/orders/${id}/edit`} className="btn">Ubah Order</Link>}
           {order.status !== "draft" && (
             <a href={`/api/orders/${id}/pdf`} target="_blank" rel="noreferrer" className="btn btn-primary">
               Cetak / PDF Nota
             </a>
           )}
+          <ActionForm
+            action={deleteOrderAction.bind(null, id)}
+            confirm={`Apakah Anda yakin ingin menghapus order ${order.order_no ?? "(draft)"} secara permanen?`}
+          >
+            <SubmitButton className="btn btn-danger">
+              Hapus
+            </SubmitButton>
+          </ActionForm>
         </div>
       </div>
+
+      {/* Banner Status Pelunasan Pihak Yogya */}
+      {order.status !== "draft" && order.status !== "batal" && (
+        pay.due <= 0 && order.total > 0 ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-emerald-950 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
+              <div>
+                <div className="font-bold text-sm text-emerald-900 tracking-wide uppercase">
+                  FAKTUR INI SUDAH LUNAS
+                </div>
+                <div className="text-xs text-emerald-700 mt-0.5">
+                  Pembayaran penuh sebesar <b>{rupiah(order.total)}</b> telah tercatat lunas.
+                  {order.payment_ref && <span> (Ref: <b>{order.payment_ref}</b>)</span>}
+                </div>
+              </div>
+            </div>
+            <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white tracking-wider uppercase shadow-2xs">
+              LUNAS
+            </span>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-amber-950 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm">
+                <CreditCard className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="font-bold text-sm text-amber-900">
+                  MENUNGGU PELUNASAN DARI PIHAK YOGYA
+                </div>
+                <div className="text-xs text-amber-800 mt-0.5">
+                  Total Tagihan: <b>{rupiah(order.total)}</b> · Sudah Bayar/DP: <b>{rupiah(pay.paid)}</b> · Sisa: <b className="text-rose-700 text-sm font-bold">{rupiah(pay.due)}</b>
+                </div>
+              </div>
+            </div>
+            <ActionForm
+              action={quickSettleOrderAction.bind(null, id)}
+              confirm={`Konfirmasi bahwa Pihak Yogya telah membayar lunas sisa tagihan ${rupiah(pay.due)}?`}
+            >
+              <input type="hidden" name="actor" value="Pihak Yogya" />
+              <input type="hidden" name="payment_ref" value="Transfer Pelunasan Yogya" />
+              <input type="hidden" name="method" value="noncash" />
+              <SubmitButton className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700">
+                <CheckCircle2 className="h-4 w-4" />
+                Konfirmasi Lunas dari Yogya
+              </SubmitButton>
+            </ActionForm>
+          </div>
+        )
+      )}
 
       {nextStatuses.length > 0 && (
         <div className="card">

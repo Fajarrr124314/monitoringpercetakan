@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { STATUS_COLOR, STATUS_LABEL } from "@/lib/constants";
+import { paymentInfo, STATUS_COLOR, STATUS_LABEL } from "@/lib/constants";
 import { dateNota, rupiah } from "@/lib/format";
 import type { BudgetUsage, OrderStatus, OrderWithRefs } from "@/lib/types";
 import { StatusBadge } from "@/components/status-badge";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { calculateDashboardFinancials } from "@/lib/cycles";
+import { OrderActionsMenu } from "@/components/order-actions-menu";
+import { CycleSettleButton } from "@/components/cycle-settle-button";
 import {
   CalendarClock,
   CalendarDays,
@@ -17,7 +19,6 @@ import {
   Printer,
   Scissors,
   CheckCircle2,
-  Clock,
   AlertCircle,
   ChevronRight,
   Receipt,
@@ -363,35 +364,48 @@ export default async function DashboardPage() {
                       <th>Pemesan</th>
                       <th>Status</th>
                       <th className="text-right">Total</th>
+                      <th className="text-right w-36">Aksi Cepat</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {recentOrders.map((o) => (
-                      <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="font-mono text-xs font-bold whitespace-nowrap">
-                          <Link
-                            href={`/orders/${o.id}`}
-                            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline"
-                          >
-                            {o.order_no ?? "(draft)"}
-                            <ChevronRight className="h-3 w-3 opacity-50" />
-                          </Link>
-                        </td>
-                        <td className="text-xs text-slate-500 whitespace-nowrap">
-                          {dateNota(o.order_date)}
-                        </td>
-                        <td>
-                          <div className="font-medium text-slate-900">{o.customer?.name ?? "-"}</div>
-                          {o.title && <div className="text-xs text-slate-400 line-clamp-1">{o.title}</div>}
-                        </td>
-                        <td>
-                          <StatusBadge status={o.status} />
-                        </td>
-                        <td className="text-right font-semibold text-slate-900 whitespace-nowrap">
-                          {rupiah(o.total)}
-                        </td>
-                      </tr>
-                    ))}
+                    {recentOrders.map((o) => {
+                      const pay = paymentInfo(o);
+                      return (
+                        <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="font-mono text-xs font-bold whitespace-nowrap">
+                            <Link
+                              href={`/orders/${o.id}`}
+                              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline"
+                            >
+                              {o.order_no ?? "(draft)"}
+                              <ChevronRight className="h-3 w-3 opacity-50" />
+                            </Link>
+                          </td>
+                          <td className="text-xs text-slate-500 whitespace-nowrap">
+                            {dateNota(o.order_date)}
+                          </td>
+                          <td>
+                            <div className="font-medium text-slate-900">{o.customer?.name ?? "-"}</div>
+                            {o.title && <div className="text-xs text-slate-400 line-clamp-1">{o.title}</div>}
+                          </td>
+                          <td>
+                            <StatusBadge status={o.status} />
+                          </td>
+                          <td className="text-right font-semibold text-slate-900 whitespace-nowrap">
+                            {rupiah(o.total)}
+                          </td>
+                          <td className="text-right">
+                            <OrderActionsMenu
+                              orderId={o.id}
+                              orderNo={o.order_no}
+                              total={o.total}
+                              due={pay.due}
+                              customerName={o.customer?.name}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -454,9 +468,17 @@ export default async function DashboardPage() {
                               <CheckCircle2 className="h-3 w-3" /> Lunas
                             </span>
                           ) : (
-                            <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
-                              Sisa {rupiah(cycle.unpaid)}
-                            </span>
+                            <div className="flex flex-col items-end">
+                              <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
+                                Sisa {rupiah(cycle.unpaid)}
+                              </span>
+                              <CycleSettleButton
+                                startDate={cycle.startDate}
+                                endDate={cycle.endDate}
+                                cycleLabel={cycle.label}
+                                unpaidAmount={cycle.unpaid}
+                              />
+                            </div>
                           )}
                         </div>
                       </div>

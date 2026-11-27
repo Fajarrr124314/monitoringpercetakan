@@ -181,10 +181,12 @@ export function buildNota(d: NotaData): NotaPage[] {
       t(21.5, L + 130.2, d.settings.thanks_note, 8.5, { maxWidth: 545 });
     }
 
+    const isLunas = o.total > 0 && due <= 0;
+
     pages.push({
       texts, lines,
       logo: { x: 20, y: 20, w: 99, h: 54 },
-      watermark: o.status === "batal" ? "BATAL" : undefined,
+      watermark: o.status === "batal" ? "BATAL" : isLunas ? "LUNAS" : undefined,
     });
     start += count;
   });

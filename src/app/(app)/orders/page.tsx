@@ -6,6 +6,8 @@ import { dateNota, rupiah } from "@/lib/format";
 import type { OrderStatus, OrderWithRefs } from "@/lib/types";
 import { PayBadge, StatusBadge } from "@/components/status-badge";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
+import { OrderActionsMenu } from "@/components/order-actions-menu";
+import { PlusCircle, Search } from "lucide-react";
 
 export const metadata: Metadata = { title: "Order & Nota" };
 
@@ -39,18 +41,27 @@ export default async function OrdersPage({
   const statuses: (OrderStatus | "semua")[] = ["semua", "draft", "masuk", "produksi", "finishing", "selesai", "batal"];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <RealtimeRefresh />
+
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="page-title">Order &amp; Nota</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Order &amp; Nota</h1>
           <p className="text-sm text-slate-500">
-            Daftar order cetak dan nota yang diterbitkan.
+            Daftar order cetak, faktur nota, dan pelunasan pembayaran percetakan.
           </p>
         </div>
-        <Link href="/orders/new" className="btn btn-primary">+ Order Baru</Link>
+        <Link
+          href="/orders/new"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition"
+        >
+          <PlusCircle className="h-4 w-4" />
+          + Order Baru
+        </Link>
       </div>
 
+      {/* Filter Status Tabs */}
       <div className="flex flex-wrap gap-1 border-b border-slate-200">
         {statuses.map((s) => {
           const active = (status ?? "semua") === s;
@@ -59,71 +70,112 @@ export default async function OrdersPage({
             <Link
               key={s}
               href={href}
-              className={`border-b-2 px-3 py-2 text-sm whitespace-nowrap ${
-                active ? "border-blue-600 font-medium text-blue-700" : "border-transparent text-slate-500 hover:text-slate-900"
+              className={`border-b-2 px-3 py-2 text-sm whitespace-nowrap transition-colors ${
+                active
+                  ? "border-blue-600 font-semibold text-blue-700"
+                  : "border-transparent text-slate-500 hover:text-slate-900"
               }`}
             >
-              {s === "semua" ? "Semua" : STATUS_LABEL[s]}
+              {s === "semua" ? "Semua Order" : STATUS_LABEL[s]}
             </Link>
           );
         })}
       </div>
 
-      <form className="flex gap-2">
+      {/* Search Bar */}
+      <form className="flex items-center gap-2">
         {status && status !== "semua" && <input type="hidden" name="status" value={status} />}
-        <input name="q" defaultValue={q} placeholder="Cari No. Order / Judul / Karyawan..." className="input max-w-xs" />
-        <button className="btn">Cari</button>
+        <div className="relative w-full max-w-sm">
+          <input
+            name="q"
+            defaultValue={q}
+            placeholder="Cari No. Order / Judul / Karyawan..."
+            className="input pl-8 text-sm"
+          />
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+        </div>
+        <button className="btn text-sm">Cari</button>
       </form>
 
-      <div className="card overflow-x-auto p-0">
+      {/* Table Orders */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-xs overflow-hidden">
         {orders.length === 0 ? (
-          <p className="p-6 text-center text-sm text-slate-500">Belum ada order.</p>
+          <div className="p-12 text-center text-sm text-slate-500">
+            Tidak ada order yang ditemukan.
+          </div>
         ) : (
-          <table className="tbl">
-            <thead>
-              <tr>
-                <th>No. Order</th>
-                <th>Tanggal</th>
-                <th>Kepada</th>
-                <th>Status</th>
-                <th>Bayar</th>
-                <th className="text-right">Total</th>
-                <th>Karyawan</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((o) => {
-                const pay = paymentInfo(o);
-                return (
-                  <tr key={o.id} className="hover:bg-slate-50">
-                    <td className="font-mono text-xs font-semibold">
-                      <Link href={`/orders/${o.id}`} className="text-blue-600 hover:underline">
-                        {o.order_no ?? "(draft)"}
-                      </Link>
-                    </td>
-                    <td className="text-xs whitespace-nowrap">{dateNota(o.order_date)}</td>
-                    <td>
-                      <div className="font-medium">{o.customer?.name ?? "-"}</div>
-                      {o.title && <div className="text-xs text-slate-500">{o.title}</div>}
-                    </td>
-                    <td><StatusBadge status={o.status} /></td>
-                    <td><PayBadge label={pay.label} /></td>
-                    <td className="text-right font-medium whitespace-nowrap">{rupiah(o.total)}</td>
-                    <td className="text-xs text-slate-600">{o.creator_name || "-"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>No. Order</th>
+                  <th>Tanggal</th>
+                  <th>Kepada / Judul</th>
+                  <th>Status Produksi</th>
+                  <th>Status Bayar</th>
+                  <th className="text-right">Total</th>
+                  <th className="text-center w-36">Aksi Cepat</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((o) => {
+                  const pay = paymentInfo(o);
+                  return (
+                    <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="font-mono text-xs font-bold whitespace-nowrap">
+                        <Link href={`/orders/${o.id}`} className="text-blue-600 hover:underline">
+                          {o.order_no ?? "(draft)"}
+                        </Link>
+                      </td>
+                      <td className="text-xs text-slate-500 whitespace-nowrap">
+                        {dateNota(o.order_date)}
+                      </td>
+                      <td>
+                        <div className="font-semibold text-slate-900">{o.customer?.name ?? "-"}</div>
+                        {o.title && <div className="text-xs text-slate-400 line-clamp-1">{o.title}</div>}
+                      </td>
+                      <td>
+                        <StatusBadge status={o.status} />
+                      </td>
+                      <td>
+                        <PayBadge label={pay.label} />
+                      </td>
+                      <td className="text-right font-bold text-slate-900 whitespace-nowrap">
+                        {rupiah(o.total)}
+                      </td>
+                      <td className="text-right">
+                        <OrderActionsMenu
+                          orderId={o.id}
+                          orderNo={o.order_no}
+                          total={o.total}
+                          due={pay.due}
+                          customerName={o.customer?.name}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-between text-sm text-slate-600">
+        <div className="flex items-center justify-between text-sm text-slate-600 pt-2">
           <span>Halaman {pageNo} dari {totalPages} ({count} order)</span>
           <div className="flex gap-2">
-            {pageNo > 1 && <Link href={`/orders?page=${pageNo - 1}&status=${status ?? ""}&q=${q}`} className="btn btn-sm">Sebelumnya</Link>}
-            {pageNo < totalPages && <Link href={`/orders?page=${pageNo + 1}&status=${status ?? ""}&q=${q}`} className="btn btn-sm">Berikutnya</Link>}
+            {pageNo > 1 && (
+              <Link href={`/orders?page=${pageNo - 1}&status=${status ?? ""}&q=${q}`} className="btn btn-sm">
+                &larr; Sebelumnya
+              </Link>
+            )}
+            {pageNo < totalPages && (
+              <Link href={`/orders?page=${pageNo + 1}&status=${status ?? ""}&q=${q}`} className="btn btn-sm">
+                Berikutnya &rarr;
+              </Link>
+            )}
           </div>
         </div>
       )}
