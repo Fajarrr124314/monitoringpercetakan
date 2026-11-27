@@ -57,36 +57,53 @@ export function Sidebar() {
       <div>
         {/* Brand Header */}
         <div
-          className={`flex items-center border-b border-slate-100 py-3.5 transition-all ${
-            isCollapsed ? "justify-center px-2" : "justify-between px-4"
+          className={`flex items-center border-b border-slate-100 py-3 transition-all ${
+            isCollapsed ? "justify-center px-2" : "justify-between px-3.5"
           }`}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-500 text-white shadow-sm shadow-blue-500/30">
-              <Printer className="h-4.5 w-4.5" />
-            </div>
-            {!isCollapsed && (
-              <div className="min-w-0">
-                <div className="truncate text-sm font-bold text-slate-900 leading-tight">
-                  Monitoring Percetakan
-                </div>
-                <div className="truncate text-[11px] font-medium text-slate-400">
-                  Sakinah Printing
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Toggle Button di Header (hanya saat expanded) */}
-          {!isCollapsed && (
+          {isCollapsed ? (
             <button
               type="button"
               onClick={toggleSidebar}
-              title="Ciutkan Sidebar (Hanya Ikon)"
-              className="hidden md:flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+              title="Percetakan Sakinah - Klik untuk perluas sidebar"
+              className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-white border border-slate-200/90 p-1 shadow-2xs hover:border-blue-300 hover:bg-blue-50/50 transition-all group cursor-pointer"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <img
+                src="/logos.png"
+                alt="Logo Percetakan Sakinah"
+                className="h-full w-full object-contain transition-transform group-hover:scale-105"
+              />
             </button>
+          ) : (
+            <>
+              <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0 group">
+                <div className="flex h-10 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white border border-slate-200/90 p-1 shadow-2xs transition-transform group-hover:scale-102">
+                  <img
+                    src="/logos.png"
+                    alt="Logo Percetakan Sakinah"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-xs font-bold text-slate-900 leading-tight">
+                    Percetakan Sakinah
+                  </div>
+                  <div className="truncate text-[10px] font-semibold text-indigo-600 mt-0.5">
+                    Monitoring System
+                  </div>
+                </div>
+              </Link>
+
+              {/* Toggle Button di Header */}
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                title="Ciutkan Sidebar (Hanya Ikon)"
+                className="hidden md:flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+            </>
           )}
         </div>
 
