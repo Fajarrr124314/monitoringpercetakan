@@ -3,6 +3,8 @@ import { getPartnersList } from "@/lib/partners";
 import { PortalCards } from "@/components/portal-cards";
 import { Handshake } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Pilih Kerjasama Percetakan | Percetakan Sakinah",
 };
