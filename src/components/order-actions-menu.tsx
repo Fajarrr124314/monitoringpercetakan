@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { FileText, Pencil, Trash2, CheckCircle, X, CreditCard, Loader2 } from "lucide-react";
 import { deleteOrderAction, quickSettleOrderAction } from "@/app/(app)/orders/actions";
+import { ConfirmModal, ToastModal } from "@/components/ui/modal";
 
 interface OrderActionsMenuProps {
   orderId: string;
@@ -22,6 +23,13 @@ export function OrderActionsMenu({
 }: OrderActionsMenuProps) {
   const [isPending, startTransition] = useTransition();
   const [showSettleModal, setShowSettleModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [toast, setToast] = useState<{ open: boolean; title: string; message: string; variant?: "success" | "error" }>({
+    open: false,
+    title: "",
+    message: "",
+  });
+
   const [method, setMethod] = useState<"noncash" | "cash">("noncash");
   const [ref, setRef] = useState("Transfer Bank Yogya");
   const [actor, setActor] = useState("Pihak Yogya");
@@ -29,14 +37,17 @@ export function OrderActionsMenu({
 
   const isPaid = total > 0 && due <= 0;
 
-  const handleDelete = () => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus order ${orderNo ?? "(draft)"} secara permanen?`)) {
-      return;
-    }
+  const confirmDelete = () => {
     startTransition(async () => {
       const res = await deleteOrderAction(orderId);
+      setShowDeleteModal(false);
       if (res?.error) {
-        alert(res.error);
+        setToast({
+          open: true,
+          title: "Gagal Menghapus Order",
+          message: res.error,
+          variant: "error",
+        });
       }
     });
   };
@@ -55,6 +66,12 @@ export function OrderActionsMenu({
         setModalError(res.error);
       } else {
         setShowSettleModal(false);
+        setToast({
+          open: true,
+          title: "Pelunasan Berhasil",
+          message: `Order ${orderNo ?? ""} telah berhasil ditandai LUNAS oleh ${actor}.`,
+          variant: "success",
+        });
       }
     });
   };
@@ -77,7 +94,7 @@ export function OrderActionsMenu({
           <button
             type="button"
             onClick={() => setShowSettleModal(true)}
-            className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 transition shadow-2xs"
+            className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 transition shadow-2xs cursor-pointer"
             title={`Sisa Tagihan Rp ${due.toLocaleString("id-ID")}. Klik untuk tandai lunas.`}
           >
             <CheckCircle className="h-3.5 w-3.5" />
@@ -102,33 +119,70 @@ export function OrderActionsMenu({
         {/* Tombol Hapus */}
         <button
           type="button"
-          onClick={handleDelete}
+          onClick={() => setShowDeleteModal(true)}
           disabled={isPending}
-          className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition shadow-2xs disabled:opacity-50"
+          className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition shadow-2xs disabled:opacity-50 cursor-pointer"
           title="Hapus Order"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
       </div>
 
+      {/* Modern Confirm Modal untuk Hapus Order */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Hapus Order Permanen?"
+        message={
+          <div>
+            <p>
+              Apakah Anda yakin ingin menghapus order <b>{orderNo ?? "(draft)"}</b>{" "}
+              {customerName ? `dari ${customerName}` : ""}?
+            </p>
+            <p className="mt-2 text-rose-600 text-[11px] font-medium">
+              Tindakan ini tidak dapat dibatalkan. Riwayat tagihan dan file terkait order ini akan ikut terhapus.
+            </p>
+          </div>
+        }
+        variant="danger"
+        confirmText="Hapus Permanen"
+        cancelText="Batal"
+        isPending={isPending}
+      />
+
+      {/* Toast Modal Notifikasi Feedback */}
+      <ToastModal
+        isOpen={toast.open}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        title={toast.title}
+        message={toast.message}
+        variant={toast.variant}
+      />
+
       {/* Modal / Dialog Konfirmasi Pelunasan Yogya */}
       {showSettleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            onClick={() => !isPending && setShowSettleModal(false)}
+          />
+          <div className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
                   <CreditCard className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900">Konfirmasi Pelunasan Yogya</h3>
-                  <p className="text-xs text-slate-500">Order: {orderNo ?? "(Draft)"} {customerName ? `· ${customerName}` : ""}</p>
+                  <h3 className="font-bold text-slate-900 text-base leading-tight">Konfirmasi Pelunasan Yogya</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Order: {orderNo ?? "(Draft)"} {customerName ? `· ${customerName}` : ""}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowSettleModal(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                disabled={isPending}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -142,14 +196,14 @@ export function OrderActionsMenu({
               )}
 
               {/* Tagihan Box */}
-              <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
+              <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3.5">
                 <div className="flex justify-between text-xs text-slate-600">
                   <span>Total Tagihan:</span>
                   <span className="font-semibold text-slate-900">Rp {total.toLocaleString("id-ID")}</span>
                 </div>
-                <div className="flex justify-between text-sm font-bold text-emerald-800 mt-1">
+                <div className="flex justify-between text-sm font-bold text-emerald-800 mt-1.5 pt-1.5 border-t border-emerald-100/60">
                   <span>Sisa Pelunasan:</span>
-                  <span>Rp {due.toLocaleString("id-ID")}</span>
+                  <span className="text-base text-emerald-700">Rp {due.toLocaleString("id-ID")}</span>
                 </div>
               </div>
 
@@ -159,11 +213,11 @@ export function OrderActionsMenu({
                 </label>
                 <input
                   type="text"
+                  required
                   value={actor}
                   onChange={(e) => setActor(e.target.value)}
                   className="input text-sm"
-                  placeholder="Contoh: Pihak Yogya / Finance / Kasir"
-                  required
+                  placeholder="Misal: Pihak Yogya / Bu Diana"
                 />
               </div>
 
@@ -175,24 +229,24 @@ export function OrderActionsMenu({
                   <button
                     type="button"
                     onClick={() => setMethod("noncash")}
-                    className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                    className={`rounded-lg border px-3 py-2 text-xs font-semibold transition cursor-pointer ${
                       method === "noncash"
-                        ? "border-emerald-600 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-500"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                        ? "border-emerald-600 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-600"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                     }`}
                   >
-                    Transfer / Giro (Non-Tunai)
+                    Transfer Bank (Non-Tunai)
                   </button>
                   <button
                     type="button"
                     onClick={() => setMethod("cash")}
-                    className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                    className={`rounded-lg border px-3 py-2 text-xs font-semibold transition cursor-pointer ${
                       method === "cash"
-                        ? "border-emerald-600 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-500"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                        ? "border-emerald-600 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-600"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                     }`}
                   >
-                    Uang Tunai (Cash)
+                    Tunai / Kas
                   </button>
                 </div>
               </div>
@@ -210,18 +264,19 @@ export function OrderActionsMenu({
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowSettleModal(false)}
-                  className="btn text-xs"
+                  disabled={isPending}
+                  className="btn text-xs px-4 py-2"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? (
                     <>
