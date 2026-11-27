@@ -12,7 +12,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-slate-50/60 md:flex">
-      <Sidebar partner={activePartner} />
+      <div className="no-print">
+        <Sidebar partner={activePartner} />
+      </div>
       <div className="min-w-0 flex-1">
         <main className="mx-auto max-w-7xl p-3.5 sm:p-6 lg:p-8 pb-24 md:pb-8">{children}</main>
       </div>

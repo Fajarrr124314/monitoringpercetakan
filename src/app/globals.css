@@ -49,11 +49,13 @@
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
 }
 
+/* ========== PRINT STYLES ========== */
 @media print {
   @page {
     size: auto;
     margin: 5mm;
   }
+
   html, body {
     background: #fff !important;
     margin: 0 !important;
@@ -63,15 +65,61 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  .no-print {
+
+  /* Sembunyikan seluruh UI web selain nota */
+  .no-print,
+  header,
+  nav,
+  aside {
     display: none !important;
   }
+
+  .min-h-screen {
+    display: block !important;
+    min-height: auto !important;
+    background: #fff !important;
+  }
+
+  .min-w-0.flex-1 {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
   .nota-wrap {
     padding: 0 !important;
     margin: 0 !important;
     background: transparent !important;
     overflow: visible !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
   }
+
+  .nota-portrait-preview {
+    width: auto !important;
+    min-height: auto !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    margin: 0 !important;
+  }
+
+  .nota-scale-box {
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+  }
+
   .nota-page {
     box-shadow: none !important;
     break-after: page;
@@ -79,6 +127,7 @@
     break-inside: avoid;
     page-break-inside: avoid;
   }
+
   .nota-page:last-child {
     break-after: auto;
     page-break-after: auto;
@@ -90,8 +139,8 @@
       width: 684pt !important;
       height: 396pt !important;
       margin: 0 auto !important;
-      transform: scale(1);
-      transform-origin: top center;
+      transform: scale(1) !important;
+      transform-origin: top center !important;
     }
   }
 
@@ -100,10 +149,11 @@
     .nota-page {
       width: 684pt !important;
       height: 396pt !important;
-      margin: 0 auto !important;
-      transform: scale(0.81);
-      transform-origin: top center;
-      margin-bottom: -72pt !important;
+      margin: 0 !important;
+      transform: scale(0.80) !important;
+      transform-origin: top left !important;
+      margin-right: -137pt !important;
+      margin-bottom: -79pt !important;
     }
   }
 }

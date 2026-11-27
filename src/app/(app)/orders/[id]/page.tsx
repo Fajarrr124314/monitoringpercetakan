@@ -49,7 +49,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     <div className="space-y-6">
       <RealtimeRefresh orderId={id} />
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="no-print flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/orders" className="text-slate-400 hover:text-slate-700 mr-1" title="Kembali ke Daftar Order">
@@ -82,7 +82,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       {/* Banner Status Pelunasan Pihak Yogya */}
       {order.status !== "draft" && order.status !== "batal" && (
         pay.due <= 0 && order.total > 0 ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-emerald-950 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+          <div className="no-print rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-emerald-950 flex flex-wrap items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
                 <CheckCircle2 className="h-6 w-6" />
@@ -102,7 +102,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </span>
           </div>
         ) : (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-amber-950 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+          <div className="no-print rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-amber-950 flex flex-wrap items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm">
                 <CreditCard className="h-5 w-5" />
@@ -133,7 +133,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       )}
 
       {nextStatuses.length > 0 && (
-        <div className="card">
+        <div className="no-print card">
           <h2 className="mb-2 text-sm font-semibold">Ubah status produksi</h2>
           <div className="flex flex-wrap gap-2">
             {nextStatuses.map((s) => (
@@ -156,7 +156,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
       {order.status !== "draft" ? (
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="no-print flex items-center justify-between">
             <h2 className="text-base font-semibold">Nota</h2>
             <span className="text-xs text-slate-500">Tampilan sama dengan hasil cetak continuous form</span>
           </div>
@@ -165,7 +165,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </div>
         </div>
       ) : (
-        <div className="card space-y-3">
+        <div className="no-print card space-y-3">
           <div className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
             Order ini masih berstatus <b>Draft</b>. Nota belum diterbitkan. Klik tombol di bawah untuk menerbitkan nota.
           </div>
@@ -190,7 +190,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       )}
 
       {order.status !== "draft" && order.status !== "batal" && (
-        <div className="card space-y-3">
+        <div className="no-print card space-y-3">
           <h2 className="text-base font-semibold">Catat Pembayaran</h2>
           <ActionForm action={recordPaymentAction.bind(null, id)} className="grid gap-3 md:grid-cols-12 md:items-end">
             <div className="md:col-span-2">
@@ -225,7 +225,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="no-print grid gap-4 md:grid-cols-2">
         <div className="card space-y-3">
           <h2 className="text-base font-semibold">File Desain &amp; Lampiran</h2>
           {editable && (

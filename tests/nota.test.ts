@@ -75,14 +75,20 @@ describe("tata letak nota", () => {
       "SEMBILAN RATUS DELAPAN PULUH TUJUH JUTA ENAM RATUS LIMA PULUH EMPAT RIBU TIGA RATUS DUA PULUH SATU RUPIAH");
   });
 
-  it("render PDF", async () => {
+  it("render PDF landscape & portrait", async () => {
     const { renderToBuffer } = await import("@react-pdf/renderer");
     const { NotaPdf } = await import("@/lib/nota-pdf");
-    const buf = await renderToBuffer(NotaPdf({ pages: buildNota(SAMPLE), title: "TJ2611-00019" }));
-    expect(buf.subarray(0, 4).toString()).toBe("%PDF");
+    const pages = buildNota(SAMPLE);
+
+    const bufLandscape = await renderToBuffer(NotaPdf({ pages, title: "TJ2611-00019", orientation: "landscape" }));
+    expect(bufLandscape.subarray(0, 4).toString()).toBe("%PDF");
+
+    const bufPortrait = await renderToBuffer(NotaPdf({ pages, title: "TJ2611-00019-portrait", orientation: "portrait" }));
+    expect(bufPortrait.subarray(0, 4).toString()).toBe("%PDF");
+
     if (process.env.NOTA_PDF_OUT) {
       mkdirSync(path.dirname(process.env.NOTA_PDF_OUT), { recursive: true });
-      writeFileSync(process.env.NOTA_PDF_OUT, buf);
+      writeFileSync(process.env.NOTA_PDF_OUT, bufLandscape);
     }
   });
 });

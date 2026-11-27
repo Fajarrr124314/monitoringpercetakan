@@ -25,12 +25,14 @@ function textStyle(t: NotaText): React.CSSProperties {
   };
 }
 
+const PORTRAIT_SCALE = 0.817;
+
 export function NotaHtml({ pages }: { pages: NotaPage[] }) {
   const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
 
   return (
     <div>
-      {/* Selector Pratinjau Landscape vs Portrait */}
+      {/* Selector Pratinjau Landscape vs Portrait (Hanya di layar, tidak tercetak) */}
       <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200/90 bg-white p-3 shadow-2xs">
         <div className="text-xs text-slate-600">
           <span className="font-bold text-slate-900">Format Pratinjau Layar: </span>
@@ -73,84 +75,96 @@ export function NotaHtml({ pages }: { pages: NotaPage[] }) {
             key={i}
             className={`mx-auto transition-all ${
               orientation === "portrait"
-                ? "w-[595pt] min-h-[842pt] bg-white p-4 rounded-xl shadow-md border border-slate-200"
+                ? "nota-portrait-preview w-[595pt] min-h-[842pt] bg-white py-6 px-4 rounded-xl shadow-md border border-slate-200"
                 : ""
             }`}
           >
             <div
-              className="nota-page mx-auto"
-              style={{
-                width: pt(NOTA_W),
-                height: pt(NOTA_H),
-                fontFamily: 'Arial, "Liberation Sans", Arimo, Helvetica, sans-serif',
-                transform: orientation === "portrait" ? "scale(0.817)" : undefined,
-                transformOrigin: orientation === "portrait" ? "top center" : undefined,
-                marginBottom: orientation === "portrait" ? "-60pt" : undefined,
-              }}
+              className="nota-scale-box mx-auto"
+              style={
+                orientation === "portrait"
+                  ? {
+                      width: pt(NOTA_W * PORTRAIT_SCALE),
+                      height: pt(NOTA_H * PORTRAIT_SCALE),
+                      overflow: "hidden",
+                    }
+                  : undefined
+              }
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={NOTA_LOGO}
-                alt="Logo"
+              <div
+                className="nota-page mx-auto"
                 style={{
-                  position: "absolute",
-                  left: pt(p.logo.x),
-                  top: pt(p.logo.y),
-                  width: pt(p.logo.w),
-                  height: pt(p.logo.h),
+                  width: pt(NOTA_W),
+                  height: pt(NOTA_H),
+                  fontFamily: 'Arial, "Liberation Sans", Arimo, Helvetica, sans-serif',
+                  transform: orientation === "portrait" ? `scale(${PORTRAIT_SCALE})` : undefined,
+                  transformOrigin: orientation === "portrait" ? "top left" : undefined,
                 }}
-              />
-              {p.lines.map((l, j) => (
-                <div
-                  key={`l${j}`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={NOTA_LOGO}
+                  alt="Logo"
                   style={{
                     position: "absolute",
-                    left: pt(l.x1),
-                    top: pt(l.y - 0.25),
-                    width: pt(l.x2 - l.x1),
-                    borderTop: `0.5pt solid ${l.color}`,
+                    left: pt(p.logo.x),
+                    top: pt(p.logo.y),
+                    width: pt(p.logo.w),
+                    height: pt(p.logo.h),
                   }}
                 />
-              ))}
-              {p.texts.map((t, j) => (
-                <span key={`t${j}`} style={textStyle(t)}>
-                  {t.text}
-                </span>
-              ))}
-              {p.watermark && (
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    pointerEvents: "none",
-                  }}
-                >
+                {p.lines.map((l, j) => (
+                  <div
+                    key={`l${j}`}
+                    style={{
+                      position: "absolute",
+                      left: pt(l.x1),
+                      top: pt(l.y - 0.25),
+                      width: pt(l.x2 - l.x1),
+                      borderTop: `0.5pt solid ${l.color}`,
+                    }}
+                  />
+                ))}
+                {p.texts.map((t, j) => (
+                  <span key={`t${j}`} style={textStyle(t)}>
+                    {t.text}
+                  </span>
+                ))}
+                {p.watermark && (
                   <div
                     style={{
-                      fontSize: "64pt",
-                      fontWeight: 900,
-                      letterSpacing: "6px",
-                      color:
-                        p.watermark === "LUNAS"
-                          ? "rgb(5 150 105 / 0.25)"
-                          : "rgb(225 29 72 / 0.22)",
-                      border:
-                        p.watermark === "LUNAS"
-                          ? "6px solid rgb(5 150 105 / 0.3)"
-                          : "6px solid rgb(225 29 72 / 0.25)",
-                      borderRadius: "14px",
-                      padding: "4px 28px",
-                      transform: "rotate(-16deg)",
-                      textTransform: "uppercase",
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      pointerEvents: "none",
                     }}
                   >
-                    {p.watermark}
+                    <div
+                      style={{
+                        fontSize: "64pt",
+                        fontWeight: 900,
+                        letterSpacing: "6px",
+                        color:
+                          p.watermark === "LUNAS"
+                            ? "rgb(5 150 105 / 0.25)"
+                            : "rgb(225 29 72 / 0.22)",
+                        border:
+                          p.watermark === "LUNAS"
+                            ? "6px solid rgb(5 150 105 / 0.3)"
+                            : "6px solid rgb(225 29 72 / 0.25)",
+                        borderRadius: "14px",
+                        padding: "4px 28px",
+                        transform: "rotate(-16deg)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {p.watermark}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         ))}
