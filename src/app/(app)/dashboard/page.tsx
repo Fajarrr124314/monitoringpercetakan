@@ -423,10 +423,10 @@ export default async function DashboardPage() {
                 <h2 className="font-bold text-slate-900">Rekap Pembayaran 15 Hari</h2>
               </div>
               <Link
-                href="/rekap"
+                href="/orders?view=nota"
                 className="text-xs font-semibold text-indigo-600 hover:underline"
               >
-                Cetak Rekap &rarr;
+                Cetak Semua Nota &rarr;
               </Link>
             </div>
 
@@ -489,11 +489,11 @@ export default async function DashboardPage() {
 
                     <div className="mt-2 pt-2 border-t border-slate-200/50 flex items-center justify-between text-[11px]">
                       <Link
-                        href={`/rekap?start=${cycle.startDate}&end=${cycle.endDate}`}
+                        href={`/orders?start=${cycle.startDate}&end=${cycle.endDate}&view=nota`}
                         className="inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700 hover:underline"
                       >
                         <Printer className="h-3 w-3" />
-                        <span>Cetak Rekap &amp; Semua Faktur &rarr;</span>
+                        <span>Cetak Semua Nota 15 Hari Ini &rarr;</span>
                       </Link>
                       <span className="text-slate-400">{cycle.orderCount} Faktur</span>
                     </div>
