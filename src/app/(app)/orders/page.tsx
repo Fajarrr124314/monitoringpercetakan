@@ -12,6 +12,7 @@ import { PrintButton } from "@/components/print-button";
 import { NotaHtml } from "@/components/nota-html";
 import { buildNota, type NotaPage } from "@/lib/nota-layout";
 import { getBillingCycle } from "@/lib/cycles";
+import { getActivePartner } from "@/lib/partners";
 import {
   PlusCircle,
   Search,
@@ -44,12 +45,15 @@ export default async function OrdersPage({
   const pageSize = 50;
   const from = (pageNo - 1) * pageSize;
 
+  const activePartner = await getActivePartner();
+
   // Query order sesuai filter
   let query = supabase
     .from("orders")
     .select("*, customer:customers(name, address, city, province, phone)", { count: "exact" })
     .order("order_date", { ascending: false });
 
+  if (activePartner) query = query.eq("customer_id", activePartner.id);
   if (status && status !== "semua") query = query.eq("status", status);
   if (start) query = query.gte("order_date", start);
   if (end) query = query.lte("order_date", end);

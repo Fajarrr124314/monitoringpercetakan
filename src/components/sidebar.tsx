@@ -17,7 +17,11 @@ import {
   Menu,
   X,
   MoreHorizontal,
+  ArrowLeftRight,
+  Building2,
 } from "lucide-react";
+import type { Partner } from "@/lib/partners";
+import { switchPartnerAction } from "@/app/actions/partners";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -29,7 +33,7 @@ const NAV = [
   { href: "/pengaturan", label: "Pengaturan", icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar({ partner }: { partner?: Partner }) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -63,13 +67,15 @@ export function Sidebar() {
     return pathname.startsWith(href);
   };
 
+  const partnerDisplayName = partner?.name ?? "YOGYA KARAWANG";
+
   return (
     <>
       {/* ========================================================================= */}
       {/* 1. MOBILE TOP APP BAR (Hanya Tampil di Layar HP < md) */}
       {/* ========================================================================= */}
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200/80 bg-white/95 px-3.5 py-2.5 backdrop-blur-md shadow-xs md:hidden">
-        <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="flex h-9 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/90 bg-white p-0.5 shadow-2xs">
             <img
               src="/logos.png"
@@ -79,15 +85,25 @@ export function Sidebar() {
           </div>
           <div className="min-w-0">
             <div className="truncate text-xs font-bold text-slate-900 leading-tight">
-              Percetakan Sakinah
+              {partnerDisplayName}
             </div>
             <div className="truncate text-[10px] font-semibold text-indigo-600">
-              Monitoring System
+              Percetakan Sakinah
             </div>
           </div>
-        </Link>
+        </div>
 
         <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => switchPartnerAction()}
+            title="Ganti Kerjasama Mitra"
+            className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 transition"
+          >
+            <ArrowLeftRight className="h-3 w-3 text-slate-400" />
+            <span className="hidden sm:inline">Ganti</span>
+          </button>
+
           <Link
             href="/orders/new"
             className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition"
@@ -95,6 +111,7 @@ export function Sidebar() {
             <PlusCircle className="h-3.5 w-3.5" />
             <span>Order</span>
           </Link>
+
           <button
             type="button"
             onClick={() => setMobileDrawerOpen(true)}
@@ -142,6 +159,24 @@ export function Sidebar() {
                 >
                   <X className="h-5 w-5" />
                 </button>
+              </div>
+
+              {/* Active Partner Info Box */}
+              <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50/70 p-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[10px] font-semibold text-blue-700 uppercase tracking-wider">Mitra Aktif:</span>
+                  <button
+                    type="button"
+                    onClick={() => switchPartnerAction()}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 hover:underline"
+                  >
+                    <ArrowLeftRight className="h-2.5 w-2.5" />
+                    <span>Ganti</span>
+                  </button>
+                </div>
+                <div className="mt-1 font-bold text-xs text-slate-900 truncate">
+                  {partnerDisplayName}
+                </div>
               </div>
 
               {/* Navigation Items in Drawer */}
@@ -304,10 +339,43 @@ export function Sidebar() {
             )}
           </div>
 
+          {/* Active Partner Badge & Switch Button on Desktop */}
+          {!isCollapsed ? (
+            <div className="mx-3 mt-3 rounded-xl border border-blue-100 bg-blue-50/70 p-2.5">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="font-semibold text-blue-700 uppercase tracking-wider">Mitra Aktif:</span>
+                <button
+                  type="button"
+                  onClick={() => switchPartnerAction()}
+                  className="inline-flex items-center gap-1 font-bold text-blue-700 hover:underline cursor-pointer"
+                  title="Kembali ke Portal & Ganti Kerjasama"
+                >
+                  <ArrowLeftRight className="h-2.5 w-2.5" />
+                  <span>Ganti</span>
+                </button>
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 font-bold text-xs text-slate-900 truncate">
+                <Building2 className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                <span className="truncate">{partnerDisplayName}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-center mt-2">
+              <button
+                type="button"
+                onClick={() => switchPartnerAction()}
+                title={`Ganti Kerjasama (Saat ini: ${partnerDisplayName})`}
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 transition cursor-pointer"
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
           {/* Navigation Items Desktop */}
           <nav
             className={`p-2 space-y-1 ${
-              isCollapsed ? "px-2 py-3" : "p-3"
+              isCollapsed ? "px-2 py-3" : "px-3 py-2"
             }`}
           >
             {NAV.map((item) => {

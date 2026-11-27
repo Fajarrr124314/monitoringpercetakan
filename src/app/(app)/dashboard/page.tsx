@@ -10,6 +10,7 @@ import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { calculateDashboardFinancials } from "@/lib/cycles";
 import { OrderActionsMenu } from "@/components/order-actions-menu";
 import { CycleSettleButton } from "@/components/cycle-settle-button";
+import { getActivePartner } from "@/lib/partners";
 import {
   CalendarClock,
   CalendarDays,
@@ -30,17 +31,27 @@ export const metadata: Metadata = { title: "Dashboard Monitoring" };
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const activePartner = await getActivePartner();
+
+  let recentQuery = supabase
+    .from("orders")
+    .select("*, customer:customers(name, city)")
+    .order("created_at", { ascending: false })
+    .limit(15);
+
+  let activeOrdersQuery = supabase
+    .from("orders")
+    .select("total, down_payment, cash_paid, noncash_paid, order_date, status")
+    .neq("status", "batal");
+
+  if (activePartner) {
+    recentQuery = recentQuery.eq("customer_id", activePartner.id);
+    activeOrdersQuery = activeOrdersQuery.eq("customer_id", activePartner.id);
+  }
 
   const [{ data: recentOrdersData }, { data: allActiveOrdersData }, { data: budgetsData }] = await Promise.all([
-    supabase
-      .from("orders")
-      .select("*, customer:customers(name, city)")
-      .order("created_at", { ascending: false })
-      .limit(15),
-    supabase
-      .from("orders")
-      .select("total, down_payment, cash_paid, noncash_paid, order_date, status")
-      .neq("status", "batal"),
+    recentQuery,
+    activeOrdersQuery,
     supabase.rpc("budget_usage"),
   ]);
 
@@ -129,11 +140,16 @@ export default async function DashboardPage() {
       {/* Header Utama */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
               Dashboard Monitoring
             </h1>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20">
+            {activePartner && (
+              <span className="rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-xs font-bold text-blue-700">
+                {activePartner.name}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               Live Sync
             </span>

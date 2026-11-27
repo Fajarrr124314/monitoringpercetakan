@@ -71,9 +71,8 @@ export function StatusSelect({
           onChange={handleChange}
           disabled={isPending}
           title="Klik untuk ubah status produksi secara instan"
-          className={`cursor-pointer appearance-none rounded-full border px-2.5 py-1 pr-6 text-xs transition focus:outline-none focus:ring-2 focus:ring-blue-500/30 ${
-            currentOption.color
-          } ${isPending ? "opacity-60" : "hover:brightness-95"} ${compact ? "py-0.5 text-[11px]" : ""}`}
+          className={`cursor-pointer appearance-none rounded-full border px-2.5 py-1 pr-6 text-xs transition focus:outline-none focus:ring-2 focus:ring-blue-500/30 ${currentOption.color
+            } ${isPending ? "opacity-60" : "hover:brightness-95"} ${compact ? "py-0.5 text-[11px]" : ""}`}
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value} className="bg-white text-slate-800 font-normal">
