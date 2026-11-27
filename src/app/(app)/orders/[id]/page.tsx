@@ -9,6 +9,7 @@ import { getOrderFull, toNotaData } from "@/lib/orders";
 import type { OrderLog, OrderFile } from "@/lib/types";
 import { ActionForm, SubmitButton } from "@/components/form";
 import { NotaHtml } from "@/components/nota-html";
+import { PdfExportMenu } from "@/components/pdf-export-menu";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { PayBadge, StatusBadge } from "@/components/status-badge";
 import { StatusSelect } from "@/components/status-select";
@@ -65,9 +66,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <div className="flex flex-wrap items-center gap-2">
           {editable && <Link href={`/orders/${id}/edit`} className="btn">Ubah Order</Link>}
           {order.status !== "draft" && (
-            <a href={`/api/orders/${id}/pdf`} target="_blank" rel="noreferrer" className="btn btn-primary">
-              Cetak / PDF Nota
-            </a>
+            <PdfExportMenu orderId={id} />
           )}
           <ActionForm
             action={deleteOrderAction.bind(null, id)}

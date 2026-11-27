@@ -45,31 +45,65 @@
   overflow: hidden;
   background: #fff;
   color: #000;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, "Liberation Sans", Arimo, Helvetica, sans-serif;
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
 }
 
 @media print {
   @page {
-    size: 684pt 396pt;
-    margin: 0;
+    size: auto;
+    margin: 5mm;
   }
-  body {
+  html, body {
     background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   .no-print {
     display: none !important;
   }
   .nota-wrap {
     padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
     overflow: visible !important;
   }
   .nota-page {
-    box-shadow: none;
-    margin: 0 !important;
+    box-shadow: none !important;
     break-after: page;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   .nota-page:last-child {
     break-after: auto;
+    page-break-after: auto;
+  }
+
+  /* OTOMATIS PAS FIT KETIKA KERTAS LANDSCAPE (Continuous Form 9.5x5.5" / A4 Landscape) */
+  @media (orientation: landscape) {
+    .nota-page {
+      width: 684pt !important;
+      height: 396pt !important;
+      margin: 0 auto !important;
+      transform: scale(1);
+      transform-origin: top center;
+    }
+  }
+
+  /* OTOMATIS PAS FIT KETIKA KERTAS PORTRAIT (A4 / Letter / Folio Portrait) */
+  @media (orientation: portrait) {
+    .nota-page {
+      width: 684pt !important;
+      height: 396pt !important;
+      margin: 0 auto !important;
+      transform: scale(0.81);
+      transform-origin: top center;
+      margin-bottom: -72pt !important;
+    }
   }
 }

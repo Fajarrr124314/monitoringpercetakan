@@ -10,6 +10,8 @@ export async function GET(req: Request) {
   const end = searchParams.get("end");
   const status = searchParams.get("status");
   const q = searchParams.get("q");
+  const orientationParam = searchParams.get("orientation") || searchParams.get("format");
+  const orientation: "landscape" | "portrait" = orientationParam === "portrait" ? "portrait" : "landscape";
 
   const supabase = await createClient();
 
@@ -76,8 +78,8 @@ export async function GET(req: Request) {
     allPages.push(...pages);
   }
 
-  const filename = `Semua-Nota-Faktur-${start ?? "all"}_sd_${end ?? "all"}.pdf`;
-  const buf = await renderToBuffer(NotaPdf({ pages: allPages, title: filename }));
+  const filename = `Semua-Nota-Faktur-${start ?? "all"}_sd_${end ?? "all"}-${orientation}.pdf`;
+  const buf = await renderToBuffer(NotaPdf({ pages: allPages, title: filename, orientation }));
 
   return new Response(new Uint8Array(buf), {
     headers: {

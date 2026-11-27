@@ -9,6 +9,7 @@ import { StatusSelect } from "@/components/status-select";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { OrderActionsMenu } from "@/components/order-actions-menu";
 import { PrintButton } from "@/components/print-button";
+import { PdfExportMenu } from "@/components/pdf-export-menu";
 import { NotaHtml } from "@/components/nota-html";
 import { buildNota, type NotaPage } from "@/lib/nota-layout";
 import { getBillingCycle } from "@/lib/cycles";
@@ -173,16 +174,16 @@ export default async function OrdersPage({
                 </Link>
               )}
 
-              <a
-                href={batchPdfUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
-                title="Download seluruh nota dalam 1 file PDF gabungan"
-              >
-                <FileDown className="h-4 w-4 text-slate-600" />
-                Batch PDF
-              </a>
+              <PdfExportMenu
+                batchParams={{
+                  status: status && status !== "semua" ? status : undefined,
+                  start,
+                  end,
+                  q,
+                }}
+                label="Batch PDF"
+                showPrint={false}
+              />
             </>
           )}
 
@@ -352,9 +353,17 @@ export default async function OrdersPage({
             </span>
             <div className="flex items-center gap-2">
               <PrintButton className="btn btn-primary btn-sm">Cetak Semua Nota</PrintButton>
-              <a href={batchPdfUrl} target="_blank" rel="noreferrer" className="btn btn-sm">
-                Download PDF
-              </a>
+              <PdfExportMenu
+                batchParams={{
+                  status: status && status !== "semua" ? status : undefined,
+                  start,
+                  end,
+                  q,
+                }}
+                label="Download PDF"
+                showPrint={false}
+                compact
+              />
             </div>
           </div>
 
