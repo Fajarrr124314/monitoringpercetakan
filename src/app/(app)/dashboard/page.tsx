@@ -303,25 +303,25 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Production Status Tracker (4 Cards) */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2.5 grid-cols-2 lg:grid-cols-4">
         {statCards.map((c) => {
           const Icon = c.icon;
           return (
             <Link
               key={c.status}
               href={`/orders?status=${c.status}`}
-              className={`group flex items-center justify-between rounded-xl border ${c.border} bg-white p-4 shadow-xs transition hover:shadow-sm hover:border-slate-300`}
+              className={`group flex items-center justify-between rounded-xl border ${c.border} bg-white p-3 sm:p-4 shadow-xs transition hover:shadow-sm hover:border-slate-300`}
             >
-              <div className="flex items-center gap-3">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${c.bg} ${c.color} transition-transform group-hover:scale-105`}>
-                  <Icon className="h-5 w-5" />
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${c.bg} ${c.color} transition-transform group-hover:scale-105`}>
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
-                <div>
-                  <div className="text-xs font-medium text-slate-500">{c.label}</div>
-                  <div className="text-xl font-bold text-slate-900 mt-0.5">{c.count}</div>
+                <div className="min-w-0">
+                  <div className="text-[11px] sm:text-xs font-medium text-slate-500 truncate">{c.label}</div>
+                  <div className="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">{c.count}</div>
                 </div>
               </div>
-              <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_COLOR[c.status]}`}>
+              <span className={`hidden sm:inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_COLOR[c.status]}`}>
                 {STATUS_LABEL[c.status]}
               </span>
             </Link>
@@ -356,60 +356,101 @@ export default async function DashboardPage() {
                 </Link>
               </div>
             ) : (
-              <div className="mt-3 overflow-x-auto">
-                <table className="tbl">
-                  <thead>
-                    <tr>
-                      <th>No. Nota</th>
-                      <th>Tanggal</th>
-                      <th>Pemesan</th>
-                      <th>Status</th>
-                      <th className="text-right">Total</th>
-                      <th className="text-right w-36">Aksi Cepat</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentOrders.map((o) => {
-                      const pay = paymentInfo(o);
-                      return (
-                        <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="font-mono text-xs font-bold whitespace-nowrap">
-                            <Link
-                              href={`/orders/${o.id}`}
-                              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline"
-                            >
-                              {o.order_no ?? "(draft)"}
-                              <ChevronRight className="h-3 w-3 opacity-50" />
-                            </Link>
-                          </td>
-                          <td className="text-xs text-slate-500 whitespace-nowrap">
-                            {dateNota(o.order_date)}
-                          </td>
-                          <td>
-                            <div className="font-medium text-slate-900">{o.customer?.name ?? "-"}</div>
-                            {o.title && <div className="text-xs text-slate-400 line-clamp-1">{o.title}</div>}
-                          </td>
-                          <td>
-                            <StatusSelect orderId={o.id} currentStatus={o.status} compact />
-                          </td>
-                          <td className="text-right font-semibold text-slate-900 whitespace-nowrap">
-                            {rupiah(o.total)}
-                          </td>
-                          <td className="text-right">
-                            <OrderActionsMenu
-                              orderId={o.id}
-                              orderNo={o.order_no}
-                              total={o.total}
-                              due={pay.due}
-                              customerName={o.customer?.name}
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                {/* TAMPILAN DESKTOP (Tabel) */}
+                <div className="hidden md:block mt-3 overflow-x-auto">
+                  <table className="tbl">
+                    <thead>
+                      <tr>
+                        <th>No. Nota</th>
+                        <th>Tanggal</th>
+                        <th>Pemesan</th>
+                        <th>Status</th>
+                        <th className="text-right">Total</th>
+                        <th className="text-right w-36">Aksi Cepat</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentOrders.map((o) => {
+                        const pay = paymentInfo(o);
+                        return (
+                          <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="font-mono text-xs font-bold whitespace-nowrap">
+                              <Link
+                                href={`/orders/${o.id}`}
+                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline"
+                              >
+                                {o.order_no ?? "(draft)"}
+                                <ChevronRight className="h-3 w-3 opacity-50" />
+                              </Link>
+                            </td>
+                            <td className="text-xs text-slate-500 whitespace-nowrap">
+                              {dateNota(o.order_date)}
+                            </td>
+                            <td>
+                              <div className="font-medium text-slate-900">{o.customer?.name ?? "-"}</div>
+                              {o.title && <div className="text-xs text-slate-400 line-clamp-1">{o.title}</div>}
+                            </td>
+                            <td>
+                              <StatusSelect orderId={o.id} currentStatus={o.status} compact />
+                            </td>
+                            <td className="text-right font-semibold text-slate-900 whitespace-nowrap">
+                              {rupiah(o.total)}
+                            </td>
+                            <td className="text-right">
+                              <OrderActionsMenu
+                                orderId={o.id}
+                                orderNo={o.order_no}
+                                total={o.total}
+                                due={pay.due}
+                                customerName={o.customer?.name}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* TAMPILAN MOBILE (Kartu Order Touch-Friendly) */}
+                <div className="md:hidden mt-3 divide-y divide-slate-100">
+                  {recentOrders.map((o) => {
+                    const pay = paymentInfo(o);
+                    return (
+                      <div key={o.id} className="py-3 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <Link
+                            href={`/orders/${o.id}`}
+                            className="font-mono text-xs font-bold text-blue-600 hover:underline"
+                          >
+                            {o.order_no ?? "(draft)"}
+                          </Link>
+                          <StatusSelect orderId={o.id} currentStatus={o.status} compact />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-slate-900">{o.customer?.name ?? "-"}</div>
+                          {o.title && <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">{o.title}</div>}
+                          <div className="text-[10px] text-slate-400 mt-0.5">{dateNota(o.order_date)}</div>
+                        </div>
+                        <div className="flex items-center justify-between border-t border-slate-100/80 pt-2">
+                          <div>
+                            <span className="text-[10px] text-slate-400 block">Total</span>
+                            <span className="text-xs font-bold text-slate-900">{rupiah(o.total)}</span>
+                          </div>
+                          <OrderActionsMenu
+                            orderId={o.id}
+                            orderNo={o.order_no}
+                            total={o.total}
+                            due={pay.due}
+                            customerName={o.customer?.name}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         </div>

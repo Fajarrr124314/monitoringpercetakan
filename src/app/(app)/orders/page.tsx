@@ -193,62 +193,62 @@ export default async function OrdersPage({
       </div>
 
       {/* PANEL TOTAL KEUANGAN DI BAGIAN ATAS */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 no-print">
+      <div className="grid gap-2.5 grid-cols-2 lg:grid-cols-4 no-print">
         {/* Total Nilai Order */}
-        <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
+        <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-2xs">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span className="font-semibold uppercase tracking-wider text-slate-600">Total Nilai Order</span>
+            <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-600">Total Order</span>
             <Layers className="h-4 w-4 text-blue-500" />
           </div>
-          <div className="mt-2 text-xl font-black text-slate-900 tracking-tight">
+          <div className="mt-1.5 sm:mt-2 text-base sm:text-xl font-black text-slate-900 tracking-tight">
             {rupiah(totalOrder)}
           </div>
-          <div className="mt-1 text-[11px] text-slate-500">
+          <div className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-slate-500">
             {orders.length} order ditampilkan
           </div>
         </div>
 
         {/* Sudah Dibayar / DP */}
-        <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
+        <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-2xs">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span className="font-semibold uppercase tracking-wider text-slate-600">Sudah Terbayar / DP</span>
+            <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-600">Terbayar</span>
             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
           </div>
-          <div className="mt-2 text-xl font-black text-emerald-700 tracking-tight">
+          <div className="mt-1.5 sm:mt-2 text-base sm:text-xl font-black text-emerald-700 tracking-tight">
             {rupiah(totalTerbayar)}
           </div>
-          <div className="mt-1 text-[11px] text-slate-500">
+          <div className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-slate-500">
             {totalOrder > 0 ? `${Math.round((totalTerbayar / totalOrder) * 100)}% lunas` : "0%"}
           </div>
         </div>
 
         {/* Sisa Belum Lunas */}
-        <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
+        <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-2xs">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span className="font-semibold uppercase tracking-wider text-slate-600">Sisa Belum Lunas</span>
+            <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-600">Sisa Tagihan</span>
             <AlertCircle className="h-4 w-4 text-amber-500" />
           </div>
-          <div className={`mt-2 text-xl font-black tracking-tight ${sisaTagihan > 0 ? "text-amber-600" : "text-emerald-700"}`}>
+          <div className={`mt-1.5 sm:mt-2 text-base sm:text-xl font-black tracking-tight ${sisaTagihan > 0 ? "text-amber-600" : "text-emerald-700"}`}>
             {rupiah(sisaTagihan)}
           </div>
-          <div className="mt-1 text-[11px] text-slate-500">
+          <div className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-slate-500">
             {sisaTagihan > 0 ? "Menunggu pelunasan" : "Seluruh order lunas"}
           </div>
         </div>
 
         {/* Filter Cepat 15 Hari Ini */}
-        <div className="rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-blue-50/50 p-4 shadow-2xs flex flex-col justify-between">
+        <div className="col-span-2 sm:col-span-1 rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-blue-50/50 p-3.5 sm:p-4 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-indigo-950">Siklus 15 Hari Berjalan</span>
-            <span className="rounded-full bg-indigo-600 px-1.5 py-0.2 text-[10px] font-medium text-white">Aktif</span>
+            <span className="font-bold text-indigo-950 text-[11px]">Siklus 15 Hari</span>
+            <span className="rounded-full bg-indigo-600 px-1.5 py-0.2 text-[9px] font-medium text-white">Aktif</span>
           </div>
-          <div className="text-xs font-bold text-slate-900 mt-1">
+          <div className="text-xs font-bold text-slate-900 mt-1 truncate">
             {currentCycle.label}
           </div>
           <div className="mt-2 flex items-center gap-1.5">
             <Link
               href={`/orders?start=${currentCycle.startDate}&end=${currentCycle.endDate}&status=${status ?? "semua"}&view=${view}`}
-              className="text-xs font-bold text-blue-700 hover:text-blue-800 hover:underline"
+              className="text-[11px] font-bold text-blue-700 hover:text-blue-800 hover:underline"
             >
               Filter 15 Hari Ini &rarr;
             </Link>
@@ -372,60 +372,121 @@ export default async function OrdersPage({
               Tidak ada order yang ditemukan.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="tbl">
-                <thead>
-                  <tr>
-                    <th>No. Order</th>
-                    <th>Tanggal</th>
-                    <th>Kepada / Judul</th>
-                    <th>Status Produksi</th>
-                    <th>Status Bayar</th>
-                    <th className="text-right">Total</th>
-                    <th className="text-center w-40">Aksi Cepat</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((o) => {
-                    const pay = paymentInfo(o);
-                    return (
-                      <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="font-mono text-xs font-bold whitespace-nowrap">
-                          <Link href={`/orders/${o.id}`} className="text-blue-600 hover:underline">
-                            {o.order_no ?? "(draft)"}
-                          </Link>
-                        </td>
-                        <td className="text-xs text-slate-500 whitespace-nowrap">
+            <>
+              {/* TAMPILAN DESKTOP (Tabel Lengkap) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th>No. Order</th>
+                      <th>Tanggal</th>
+                      <th>Kepada / Judul</th>
+                      <th>Status Produksi</th>
+                      <th>Status Bayar</th>
+                      <th className="text-right">Total</th>
+                      <th className="text-center w-40">Aksi Cepat</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((o) => {
+                      const pay = paymentInfo(o);
+                      return (
+                        <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="font-mono text-xs font-bold whitespace-nowrap">
+                            <Link href={`/orders/${o.id}`} className="text-blue-600 hover:underline">
+                              {o.order_no ?? "(draft)"}
+                            </Link>
+                          </td>
+                          <td className="text-xs text-slate-500 whitespace-nowrap">
+                            {dateNota(o.order_date)}
+                          </td>
+                          <td>
+                            <div className="font-semibold text-slate-900">{o.customer?.name ?? "-"}</div>
+                            {o.title && <div className="text-xs text-slate-400 line-clamp-1">{o.title}</div>}
+                          </td>
+                          <td>
+                            <StatusSelect orderId={o.id} currentStatus={o.status} />
+                          </td>
+                          <td>
+                            <PayBadge label={pay.label} />
+                          </td>
+                          <td className="text-right font-bold text-slate-900 whitespace-nowrap">
+                            {rupiah(o.total)}
+                          </td>
+                          <td className="text-right">
+                            <OrderActionsMenu
+                              orderId={o.id}
+                              orderNo={o.order_no}
+                              total={o.total}
+                              due={pay.due}
+                              customerName={o.customer?.name}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* TAMPILAN MOBILE (Kartu Order Touch-Friendly) */}
+              <div className="md:hidden divide-y divide-slate-100">
+                {orders.map((o) => {
+                  const pay = paymentInfo(o);
+                  return (
+                    <div key={o.id} className="p-3.5 space-y-2.5">
+                      {/* Baris 1: No. Order + Dropdown Status */}
+                      <div className="flex items-center justify-between gap-2">
+                        <Link
+                          href={`/orders/${o.id}`}
+                          className="font-mono text-xs font-bold text-blue-600 hover:underline"
+                        >
+                          {o.order_no ?? "(draft)"}
+                        </Link>
+                        <StatusSelect orderId={o.id} currentStatus={o.status} compact />
+                      </div>
+
+                      {/* Baris 2: Pemesan & Keterangan */}
+                      <div>
+                        <div className="text-xs font-bold text-slate-900 leading-tight">
+                          {o.customer?.name ?? "Pelanggan Umum"}
+                        </div>
+                        {o.title && (
+                          <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                            {o.title}
+                          </div>
+                        )}
+                        <div className="text-[10px] text-slate-400 mt-0.5">
                           {dateNota(o.order_date)}
-                        </td>
-                        <td>
-                          <div className="font-semibold text-slate-900">{o.customer?.name ?? "-"}</div>
-                          {o.title && <div className="text-xs text-slate-400 line-clamp-1">{o.title}</div>}
-                        </td>
-                        <td>
-                          <StatusSelect orderId={o.id} currentStatus={o.status} />
-                        </td>
-                        <td>
+                        </div>
+                      </div>
+
+                      {/* Baris 3: Total & Status Bayar */}
+                      <div className="flex items-center justify-between border-t border-slate-100/80 pt-2 text-xs">
+                        <div>
+                          <span className="text-[10px] text-slate-400 block">Total Tagihan</span>
+                          <span className="font-bold text-slate-900 text-sm">{rupiah(o.total)}</span>
+                        </div>
+                        <div className="text-right">
                           <PayBadge label={pay.label} />
-                        </td>
-                        <td className="text-right font-bold text-slate-900 whitespace-nowrap">
-                          {rupiah(o.total)}
-                        </td>
-                        <td className="text-right">
-                          <OrderActionsMenu
-                            orderId={o.id}
-                            orderNo={o.order_no}
-                            total={o.total}
-                            due={pay.due}
-                            customerName={o.customer?.name}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        </div>
+                      </div>
+
+                      {/* Baris 4: Aksi Cepat (Faktur, Lunas, Edit, Hapus) */}
+                      <div className="border-t border-slate-100/80 pt-2 flex items-center justify-end">
+                        <OrderActionsMenu
+                          orderId={o.id}
+                          orderNo={o.order_no}
+                          total={o.total}
+                          due={pay.due}
+                          customerName={o.customer?.name}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       )}

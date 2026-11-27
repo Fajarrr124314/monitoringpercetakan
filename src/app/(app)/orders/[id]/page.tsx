@@ -48,17 +48,17 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     <div className="space-y-6">
       <RealtimeRefresh orderId={id} />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Link href="/orders" className="text-slate-400 hover:text-slate-700 mr-1" title="Kembali ke Daftar Order">
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <h1 className="page-title font-mono">{order.order_no ?? "(Draft)"}</h1>
-            <StatusSelect orderId={order.id} currentStatus={order.status} />
+            <StatusSelect orderId={order.id} currentStatus={order.status} compact />
             <PayBadge label={pay.label} />
           </div>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Dibuat {dateTime(order.created_at)} · Karyawan: <b>{order.creator_name || "-"}</b>
           </p>
         </div>
