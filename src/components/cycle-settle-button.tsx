@@ -26,8 +26,8 @@ export function CycleSettleButton({
 
   const handleSettleConfirm = () => {
     const formData = new FormData();
-    formData.append("actor", "Pihak Yogya");
-    formData.append("payment_ref", `Pelunasan Siklus 15 Hari (${cycleLabel})`);
+    formData.append("actor", "Pihak Mitra");
+    formData.append("payment_ref", `Pelunasan Periode (${cycleLabel})`);
 
     startTransition(async () => {
       const res = await settleCycleOrdersAction(startDate, endDate, undefined, formData);
@@ -42,8 +42,8 @@ export function CycleSettleButton({
       } else {
         setToast({
           open: true,
-          title: "Siklus 15 Hari Lunas!",
-          message: `Seluruh order pada periode ${cycleLabel} berhasil ditandai LUNAS oleh Pihak Yogya.`,
+          title: "Periode Ini Lunas!",
+          message: `Seluruh order pada periode ${cycleLabel} berhasil ditandai LUNAS.`,
           variant: "success",
         });
       }
@@ -57,14 +57,14 @@ export function CycleSettleButton({
         onClick={() => setShowConfirm(true)}
         disabled={isPending}
         className="mt-1.5 inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 transition disabled:opacity-50 cursor-pointer shadow-2xs"
-        title="Tandai seluruh order pada 15 hari ini menjadi Lunas"
+        title="Tandai seluruh order pada periode ini menjadi Lunas"
       >
         {isPending ? (
           <Loader2 className="h-3 w-3 animate-spin" />
         ) : (
           <CheckCheck className="h-3 w-3" />
         )}
-        <span>Lunasi Siklus Ini</span>
+        <span>Lunasi Periode Ini</span>
       </button>
 
       {/* Modal Konfirmasi Pelunasan Siklus */}
@@ -72,7 +72,7 @@ export function CycleSettleButton({
         isOpen={showConfirm}
         onClose={() => setShowConfirm(false)}
         onConfirm={handleSettleConfirm}
-        title="Konfirmasi Pelunasan 15 Hari"
+        title="Konfirmasi Pelunasan Periode"
         message={
           <div className="space-y-3">
             <p>

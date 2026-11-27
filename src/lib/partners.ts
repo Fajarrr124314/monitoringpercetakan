@@ -8,12 +8,19 @@ export interface Partner {
   province: string;
   address: string;
   pin: string;
+  hasPin: boolean;
   orderCount?: number;
   totalUnpaid?: number;
 }
 
 const COOKIE_NAME = "active_partner_id";
-const DEFAULT_PIN = "1234";
+export const DEFAULT_PIN = "1234";
+
+export function isPinEnabled(pin: string | null | undefined): boolean {
+  if (!pin) return false;
+  const clean = pin.trim().toUpperCase();
+  return clean !== "" && clean !== "NOPIN" && clean !== "OFF" && clean !== "FALSE" && clean !== "NONE";
+}
 
 /**
  * Mengambil daftar seluruh mitra kerjasama dari tabel customers
@@ -48,6 +55,7 @@ export async function getPartnersList(): Promise<Partner[]> {
           province: created.province || "Jawa Barat",
           address: created.address || "",
           pin: created.phone || DEFAULT_PIN,
+          hasPin: isPinEnabled(created.phone || DEFAULT_PIN),
           orderCount: 0,
           totalUnpaid: 0,
         },
@@ -73,13 +81,16 @@ export async function getPartnersList(): Promise<Partner[]> {
 
   return customers.map((c) => {
     const stats = orderStats.get(c.id) ?? { count: 0, unpaid: 0 };
+    const rawPin = c.phone?.trim() ?? "";
+    const activePin = isPinEnabled(rawPin) ? rawPin : "";
     return {
       id: c.id,
       name: c.name,
       city: c.city || "Karawang",
       province: c.province || "Jawa Barat",
       address: c.address || "",
-      pin: c.phone?.trim() ? c.phone.trim() : DEFAULT_PIN,
+      pin: activePin,
+      hasPin: isPinEnabled(rawPin),
       orderCount: stats.count,
       totalUnpaid: stats.unpaid,
     };
@@ -104,13 +115,15 @@ export async function getActivePartner(): Promise<Partner | null> {
 
   if (!customer) return null;
 
+  const rawPin = customer.phone?.trim() ?? "";
   return {
     id: customer.id,
     name: customer.name,
     city: customer.city || "Karawang",
     province: customer.province || "Jawa Barat",
     address: customer.address || "",
-    pin: customer.phone?.trim() ? customer.phone.trim() : DEFAULT_PIN,
+    pin: isPinEnabled(rawPin) ? rawPin : "",
+    hasPin: isPinEnabled(rawPin),
   };
 }
 

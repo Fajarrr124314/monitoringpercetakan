@@ -240,10 +240,10 @@ export default async function OrdersPage({
           </div>
         </div>
 
-        {/* Filter Cepat 15 Hari Ini */}
+        {/* Filter Cepat Periode Berjalan */}
         <div className="col-span-2 sm:col-span-1 rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-blue-50/50 p-3.5 sm:p-4 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-indigo-950 text-[11px]">Siklus 15 Hari</span>
+            <span className="font-bold text-indigo-950 text-[11px]">Periode Berjalan</span>
             <span className="rounded-full bg-indigo-600 px-1.5 py-0.2 text-[9px] font-medium text-white">Aktif</span>
           </div>
           <div className="text-xs font-bold text-slate-900 mt-1 truncate">
@@ -254,7 +254,7 @@ export default async function OrdersPage({
               href={`/orders?start=${currentCycle.startDate}&end=${currentCycle.endDate}&status=${status ?? "semua"}&view=${view}`}
               className="text-[11px] font-bold text-blue-700 hover:text-blue-800 hover:underline"
             >
-              Filter 15 Hari Ini &rarr;
+              Filter Periode Ini &rarr;
             </Link>
             {(start || end) && (
               <Link

@@ -52,7 +52,7 @@ export default async function HomePage() {
         </h1>
 
         <p className="mt-2 text-xs sm:text-sm text-slate-500 max-w-md leading-relaxed">
-          Pilih mitra kerjasama di bawah ini dan masukkan PIN keamanan untuk mengakses dashboard monitoring faktur &amp; tagihan 15 harian.
+          Pilih mitra kerjasama di bawah ini untuk mengakses dashboard monitoring faktur &amp; tagihan berkala percetakan.
         </p>
 
         {/* Kotak-kotak Card Kerjasama */}
@@ -63,7 +63,7 @@ export default async function HomePage() {
 
       {/* Footer Note */}
       <div className="w-full max-w-5xl mx-auto border-t border-slate-200/80 pt-4 pb-2 text-center text-[11px] text-slate-400">
-        Percetakan Sakinah · Karawang, Jawa Barat · Sistem Kerjasama Penagihan Berkala 15 Hari
+        Percetakan Sakinah · Karawang, Jawa Barat · Sistem Kerjasama &amp; Penagihan Berkala
       </div>
     </div>
   );

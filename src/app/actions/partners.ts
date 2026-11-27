@@ -3,9 +3,9 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { setActivePartnerCookie, clearActivePartnerCookie } from "@/lib/partners";
+import { setActivePartnerCookie, clearActivePartnerCookie, isPinEnabled } from "@/lib/partners";
 
-export async function loginPartnerAction(partnerId: string, inputPin: string) {
+export async function loginPartnerAction(partnerId: string, inputPin?: string) {
   const supabase = await createClient();
 
   const { data: customer, error } = await supabase
@@ -18,24 +18,31 @@ export async function loginPartnerAction(partnerId: string, inputPin: string) {
     return { error: "Kerjasama tidak ditemukan." };
   }
 
-  const expectedPin = customer.phone?.trim() ? customer.phone.trim() : "1234";
+  // Cek apakah mitra ini menggunakan PIN atau bebas akses
+  const pinRequired = isPinEnabled(customer.phone);
 
-  if (inputPin.trim() !== expectedPin) {
-    return { error: "PIN yang dimasukkan salah. Silakan coba lagi." };
+  if (pinRequired) {
+    const expectedPin = customer.phone.trim();
+    if (!inputPin || inputPin.trim() !== expectedPin) {
+      return { error: "PIN yang dimasukkan salah. Silakan coba lagi." };
+    }
   }
 
-  // PIN Benar -> simpan cookie mitra aktif
+  // Masuk berhasil -> simpan cookie mitra aktif
   await setActivePartnerCookie(partnerId);
 
   revalidatePath("/", "layout");
   return { ok: true };
 }
 
-export async function changePinAction(partnerId: string, oldPin: string, newPin: string) {
-  if (!newPin || newPin.trim().length < 4) {
-    return { error: "PIN baru harus minimal 4 karakter/angka." };
+export async function updatePartnerPinSettingsAction(
+  partnerId: string,
+  params: {
+    enablePin: boolean;
+    oldPin?: string;
+    newPin?: string;
   }
-
+) {
   const supabase = await createClient();
 
   const { data: customer, error } = await supabase
@@ -48,16 +55,43 @@ export async function changePinAction(partnerId: string, oldPin: string, newPin:
     return { error: "Kerjasama tidak ditemukan." };
   }
 
-  const currentPin = customer.phone?.trim() ? customer.phone.trim() : "1234";
+  const currentHasPin = isPinEnabled(customer.phone);
+  const currentPin = customer.phone?.trim() || "";
 
-  if (oldPin.trim() !== currentPin) {
-    return { error: "PIN lama yang Anda masukkan salah." };
+  // 1. Jika pengguna menonaktifkan PIN (Bebas Akses)
+  if (!params.enablePin) {
+    if (currentHasPin && params.oldPin) {
+      if (params.oldPin.trim() !== currentPin) {
+        return { error: "PIN saat ini tidak cocok." };
+      }
+    }
+    const { error: updErr } = await supabase
+      .from("customers")
+      .update({ phone: "NOPIN" })
+      .eq("id", partnerId);
+
+    if (updErr) return { error: "Gagal menonaktifkan PIN: " + updErr.message };
+
+    revalidatePath("/", "layout");
+    return { ok: true, message: "PIN berhasil dinonaktifkan! Kerjasama ini kini bebas akses tanpa PIN." };
   }
 
-  // Update PIN baru ke kolom phone
+  // 2. Jika pengguna mengaktifkan atau mengganti PIN
+  const newPin = params.newPin?.trim() || "";
+  if (newPin.length < 4) {
+    return { error: "PIN baru harus minimal 4 karakter/angka." };
+  }
+
+  // Jika sebelumnya sudah punya PIN, verifikasi PIN lama
+  if (currentHasPin && currentPin) {
+    if (!params.oldPin || params.oldPin.trim() !== currentPin) {
+      return { error: "PIN lama yang Anda masukkan salah." };
+    }
+  }
+
   const { error: updateErr } = await supabase
     .from("customers")
-    .update({ phone: newPin.trim() })
+    .update({ phone: newPin })
     .eq("id", partnerId);
 
   if (updateErr) {
@@ -65,21 +99,26 @@ export async function changePinAction(partnerId: string, oldPin: string, newPin:
   }
 
   revalidatePath("/", "layout");
-  return { ok: true, message: "PIN berhasil diperbarui!" };
+  return { ok: true, message: "PIN keamanan berhasil diaktifkan & diperbarui!" };
 }
 
 export async function createPartnerAction(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const city = String(formData.get("city") || "Karawang").trim();
   const address = String(formData.get("address") || "").trim();
+  const enablePin = formData.get("enablePin") === "true";
   const pin = String(formData.get("pin") || "1234").trim();
 
   if (!name) {
     return { error: "Nama kerjasama / mitra wajib diisi." };
   }
 
-  if (pin.length < 4) {
-    return { error: "PIN akses harus minimal 4 digit." };
+  let finalPhone = "NOPIN";
+  if (enablePin) {
+    if (pin.length < 4) {
+      return { error: "PIN akses harus minimal 4 digit." };
+    }
+    finalPhone = pin;
   }
 
   const supabase = await createClient();
@@ -90,7 +129,7 @@ export async function createPartnerAction(formData: FormData) {
       name: name.toUpperCase(),
       city,
       address,
-      phone: pin,
+      phone: finalPhone,
       province: "Jawa Barat",
     })
     .select()

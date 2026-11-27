@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Building2,
   Lock,
+  Unlock,
   KeyRound,
   Plus,
   ArrowRight,
@@ -16,9 +17,15 @@ import {
   EyeOff,
   CheckCircle2,
   AlertCircle,
+  Shield,
+  ShieldAlert,
 } from "lucide-react";
 import type { Partner } from "@/lib/partners";
-import { loginPartnerAction, changePinAction, createPartnerAction } from "@/app/actions/partners";
+import {
+  loginPartnerAction,
+  updatePartnerPinSettingsAction,
+  createPartnerAction,
+} from "@/app/actions/partners";
 import { rupiah } from "@/lib/format";
 
 interface PortalCardsProps {
@@ -35,8 +42,9 @@ export function PortalCards({ partners }: PortalCardsProps) {
   const [showPin, setShowPin] = useState(false);
   const [pinError, setPinError] = useState("");
 
-  // State untuk modal Ubah PIN
+  // State untuk modal Atur PIN & Toggle
   const [changePinPartner, setChangePinPartner] = useState<Partner | null>(null);
+  const [enablePinToggle, setEnablePinToggle] = useState(true);
   const [oldPin, setOldPin] = useState("");
   const [newPin, setNewPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
@@ -47,10 +55,30 @@ export function PortalCards({ partners }: PortalCardsProps) {
   const [showAddPartner, setShowAddPartner] = useState(false);
   const [newName, setNewName] = useState("");
   const [newCity, setNewCity] = useState("Karawang");
+  const [newEnablePin, setNewEnablePin] = useState(true);
   const [newPartnerPin, setNewPartnerPin] = useState("1234");
   const [addError, setAddError] = useState("");
 
-  // Handler Verifikasi PIN
+  // Handler Buka Dashboard (jika tanpa PIN, langsung login instan)
+  const handleOpenDashboard = (partner: Partner) => {
+    if (!partner.hasPin) {
+      // Bebas akses tanpa PIN
+      startTransition(async () => {
+        const res = await loginPartnerAction(partner.id);
+        if (res?.ok) {
+          router.push("/dashboard");
+        }
+      });
+      return;
+    }
+
+    // Jika butuh PIN, buka dialog PIN
+    setSelectedPartner(partner);
+    setPinInput("");
+    setPinError("");
+  };
+
+  // Handler Submit PIN
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPartner) return;
@@ -61,37 +89,48 @@ export function PortalCards({ partners }: PortalCardsProps) {
       if (res?.error) {
         setPinError(res.error);
       } else {
-        // Berhasil -> masuk ke dashboard
         router.push("/dashboard");
       }
     });
   };
 
-  // Handler Ubah PIN
-  const handleChangePinSubmit = (e: React.FormEvent) => {
+  // Handler Simpan Pengaturan PIN (Atur / Ubah / Toggle On-Off)
+  const handleSavePinSettings = (e: React.FormEvent) => {
     e.preventDefault();
     if (!changePinPartner) return;
     setChangePinError("");
     setChangePinSuccess("");
 
-    if (newPin !== confirmPin) {
-      setChangePinError("Konfirmasi PIN baru tidak sesuai.");
-      return;
+    if (enablePinToggle) {
+      if (newPin !== confirmPin) {
+        setChangePinError("Konfirmasi PIN baru tidak sesuai.");
+        return;
+      }
+      if (newPin.length < 4) {
+        setChangePinError("PIN baru minimal harus 4 karakter/angka.");
+        return;
+      }
     }
 
     startTransition(async () => {
-      const res = await changePinAction(changePinPartner.id, oldPin, newPin);
+      const res = await updatePartnerPinSettingsAction(changePinPartner.id, {
+        enablePin: enablePinToggle,
+        oldPin,
+        newPin,
+      });
+
       if (res?.error) {
         setChangePinError(res.error);
       } else {
-        setChangePinSuccess("PIN berhasil diperbarui! Gunakan PIN baru ini untuk masuk.");
+        setChangePinSuccess(res?.message || "Pengaturan PIN berhasil disimpan!");
         setTimeout(() => {
           setChangePinPartner(null);
           setOldPin("");
           setNewPin("");
           setConfirmPin("");
           setChangePinSuccess("");
-        }, 1500);
+          router.refresh();
+        }, 1200);
       }
     });
   };
@@ -104,6 +143,7 @@ export function PortalCards({ partners }: PortalCardsProps) {
     const fd = new FormData();
     fd.append("name", newName);
     fd.append("city", newCity);
+    fd.append("enablePin", String(newEnablePin));
     fd.append("pin", newPartnerPin);
 
     startTransition(async () => {
@@ -156,20 +196,34 @@ export function PortalCards({ partners }: PortalCardsProps) {
                     </div>
                   </div>
 
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
-                    <ShieldCheck className="h-3 w-3" />
-                    Aktif
-                  </span>
+                  {/* Status PIN Badge */}
+                  {partner.hasPin ? (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700 border border-slate-200"
+                      title="Dilindungi PIN Keamanan"
+                    >
+                      <Lock className="h-2.5 w-2.5 text-blue-600" />
+                      PIN Aktif
+                    </span>
+                  ) : (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200"
+                      title="Bebas akses tanpa PIN"
+                    >
+                      <Unlock className="h-2.5 w-2.5 text-emerald-600" />
+                      Bebas Akses
+                    </span>
+                  )}
                 </div>
 
-                {/* Info Kerjasama & Tempo */}
+                {/* Info Kerjasama & Penagihan Berkala */}
                 <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs space-y-1.5">
                   <div className="flex items-center justify-between text-slate-600">
                     <span className="flex items-center gap-1">
                       <CalendarClock className="h-3.5 w-3.5 text-indigo-500" />
                       Sistem Pembayaran:
                     </span>
-                    <span className="font-bold text-indigo-900">Tempo 15 Hari</span>
+                    <span className="font-bold text-indigo-900">Penagihan Berkala</span>
                   </div>
                   <div className="flex items-center justify-between text-slate-600">
                     <span>Order Tercatat:</span>
@@ -190,13 +244,15 @@ export function PortalCards({ partners }: PortalCardsProps) {
                   type="button"
                   onClick={() => {
                     setChangePinPartner(partner);
+                    setEnablePinToggle(partner.hasPin);
                     setOldPin("");
                     setNewPin("");
                     setConfirmPin("");
                     setChangePinError("");
+                    setChangePinSuccess("");
                   }}
                   className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer"
-                  title="Atur / Ubah PIN Akses"
+                  title="Atur / Aktifkan / Nonaktifkan PIN"
                 >
                   <KeyRound className="h-3.5 w-3.5 text-slate-400" />
                   <span>Atur PIN</span>
@@ -204,16 +260,16 @@ export function PortalCards({ partners }: PortalCardsProps) {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedPartner(partner);
-                    setPinInput("");
-                    setPinError("");
-                  }}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition cursor-pointer"
+                  onClick={() => handleOpenDashboard(partner)}
+                  disabled={isPending}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
                 >
-                  <Lock className="h-3.5 w-3.5" />
+                  {partner.hasPin ? (
+                    <Lock className="h-3.5 w-3.5" />
+                  ) : (
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  )}
                   <span>Buka Dashboard</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
@@ -227,6 +283,7 @@ export function PortalCards({ partners }: PortalCardsProps) {
             setShowAddPartner(true);
             setNewName("");
             setNewCity("Karawang");
+            setNewEnablePin(true);
             setNewPartnerPin("1234");
             setAddError("");
           }}
@@ -239,7 +296,7 @@ export function PortalCards({ partners }: PortalCardsProps) {
             + Buka Kerjasama Baru
           </h4>
           <p className="mt-1 text-xs text-slate-500 max-w-[200px] leading-relaxed">
-            Daftarkan mitra atau cabang percetakan baru dan atur PIN keamanannya.
+            Daftarkan mitra atau cabang percetakan baru dengan opsi PIN atau bebas akses.
           </p>
         </button>
       </div>
@@ -284,7 +341,7 @@ export function PortalCards({ partners }: PortalCardsProps) {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  PIN Keamanan (Default: 1234)
+                  PIN Keamanan
                 </label>
                 <div className="relative">
                   <input
@@ -306,7 +363,7 @@ export function PortalCards({ partners }: PortalCardsProps) {
                   </button>
                 </div>
                 <p className="mt-1 text-[11px] text-slate-400 text-center">
-                  PIN diperlukan untuk menjaga privasi tagihan & nota kerjasama.
+                  PIN diperlukan untuk menjaga privasi tagihan &amp; nota kerjasama.
                 </p>
               </div>
 
@@ -343,7 +400,7 @@ export function PortalCards({ partners }: PortalCardsProps) {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 2: ATUR / UBAH PIN KERJASAMA */}
+      {/* MODAL 2: ATUR / TOGGLE / UBAH PIN KERJASAMA */}
       {/* ========================================================================= */}
       {changePinPartner && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -358,7 +415,7 @@ export function PortalCards({ partners }: PortalCardsProps) {
                   <KeyRound className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-base leading-tight">Atur PIN Kerjasama</h3>
+                  <h3 className="font-bold text-slate-900 text-base leading-tight">Pengaturan PIN Akses</h3>
                   <p className="text-xs text-slate-500 mt-0.5">{changePinPartner.name}</p>
                 </div>
               </div>
@@ -372,7 +429,7 @@ export function PortalCards({ partners }: PortalCardsProps) {
               </button>
             </div>
 
-            <form onSubmit={handleChangePinSubmit} className="mt-5 space-y-3.5">
+            <form onSubmit={handleSavePinSettings} className="mt-5 space-y-4">
               {changePinError && (
                 <div className="flex items-center gap-2 rounded-xl bg-rose-50 p-2.5 text-xs text-rose-700 font-medium">
                   <AlertCircle className="h-4 w-4 shrink-0" />
@@ -386,49 +443,86 @@ export function PortalCards({ partners }: PortalCardsProps) {
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  PIN Lama (Default: 1234)
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={oldPin}
-                  onChange={(e) => setOldPin(e.target.value)}
-                  placeholder="Ketik PIN saat ini..."
-                  className="input text-sm"
-                />
+              {/* TOGGLE: GUNAKAN PIN ATAU TIDAK */}
+              <div className="rounded-xl border border-slate-200/90 bg-slate-50/80 p-3.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {enablePinToggle ? (
+                      <Shield className="h-4 w-4 text-blue-600" />
+                    ) : (
+                      <ShieldAlert className="h-4 w-4 text-slate-400" />
+                    )}
+                    <span className="text-xs font-bold text-slate-900">
+                      Gunakan PIN Keamanan
+                    </span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={enablePinToggle}
+                      onChange={(e) => setEnablePinToggle(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500 leading-relaxed">
+                  {enablePinToggle
+                    ? "PIN aktif: siapapun yang membuka dashboard harus memasukkan PIN."
+                    : "PIN nonaktif: siapapun dapat langsung membuka dashboard tanpa PIN (Bebas Akses)."}
+                </p>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  PIN Baru (Minimal 4 Angka)
-                </label>
-                <input
-                  type="password"
-                  required
-                  minLength={4}
-                  value={newPin}
-                  onChange={(e) => setNewPin(e.target.value)}
-                  placeholder="Ketik PIN baru..."
-                  className="input text-sm"
-                />
-              </div>
+              {/* INPUT FIELDS (Hanya tampil jika PIN diaktifkan) */}
+              {enablePinToggle && (
+                <div className="space-y-3 pt-1">
+                  {changePinPartner.hasPin && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        PIN Lama Saat Ini
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        value={oldPin}
+                        onChange={(e) => setOldPin(e.target.value)}
+                        placeholder="Ketik PIN lama..."
+                        className="input text-sm"
+                      />
+                    </div>
+                  )}
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Konfirmasi PIN Baru
-                </label>
-                <input
-                  type="password"
-                  required
-                  minLength={4}
-                  value={confirmPin}
-                  onChange={(e) => setConfirmPin(e.target.value)}
-                  placeholder="Ulangi PIN baru..."
-                  className="input text-sm"
-                />
-              </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {changePinPartner.hasPin ? "PIN Baru (Minimal 4 Angka)" : "Tetapkan PIN Baru (Minimal 4 Angka)"}
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      minLength={4}
+                      value={newPin}
+                      onChange={(e) => setNewPin(e.target.value)}
+                      placeholder="Ketik PIN..."
+                      className="input text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Konfirmasi PIN
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      minLength={4}
+                      value={confirmPin}
+                      onChange={(e) => setConfirmPin(e.target.value)}
+                      placeholder="Ulangi PIN..."
+                      className="input text-sm"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
@@ -441,7 +535,7 @@ export function PortalCards({ partners }: PortalCardsProps) {
                 </button>
                 <button
                   type="submit"
-                  disabled={isPending || !newPin || !oldPin}
+                  disabled={isPending}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? (
@@ -450,7 +544,7 @@ export function PortalCards({ partners }: PortalCardsProps) {
                       <span>Menyimpan...</span>
                     </>
                   ) : (
-                    <span>Simpan PIN Baru</span>
+                    <span>Simpan Pengaturan</span>
                   )}
                 </button>
               </div>
@@ -525,23 +619,45 @@ export function PortalCards({ partners }: PortalCardsProps) {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  PIN Keamanan Akses (Minimal 4 Angka)
-                </label>
-                <input
-                  type="password"
-                  required
-                  minLength={4}
-                  value={newPartnerPin}
-                  onChange={(e) => setNewPartnerPin(e.target.value)}
-                  placeholder="Ketik PIN awal..."
-                  className="input text-sm"
-                />
-                <p className="mt-1 text-[11px] text-slate-400">
-                  PIN ini akan diminta setiap kali masuk ke dashboard mitra ini.
+              {/* TOGGLE GUNAKAN PIN PADA KERJASAMA BARU */}
+              <div className="rounded-xl border border-slate-200/90 bg-slate-50/80 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-900">
+                    Gunakan PIN Keamanan
+                  </span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newEnablePin}
+                      onChange={(e) => setNewEnablePin(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  {newEnablePin
+                    ? "Mitra akan dilindungi PIN akses."
+                    : "Mitra dapat langsung dibuka tanpa PIN."}
                 </p>
               </div>
+
+              {newEnablePin && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    PIN Keamanan Akses (Minimal 4 Angka)
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    minLength={4}
+                    value={newPartnerPin}
+                    onChange={(e) => setNewPartnerPin(e.target.value)}
+                    placeholder="Ketik PIN awal..."
+                    className="input text-sm"
+                  />
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button

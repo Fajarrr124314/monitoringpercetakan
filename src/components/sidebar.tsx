@@ -75,7 +75,7 @@ export function Sidebar({ partner }: { partner?: Partner }) {
       {/* 1. MOBILE TOP APP BAR (Hanya Tampil di Layar HP < md) */}
       {/* ========================================================================= */}
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200/80 bg-white/95 px-3.5 py-2.5 backdrop-blur-md shadow-xs md:hidden">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0">
           <div className="flex h-9 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/90 bg-white p-0.5 shadow-2xs">
             <img
               src="/logos.png"
@@ -85,23 +85,23 @@ export function Sidebar({ partner }: { partner?: Partner }) {
           </div>
           <div className="min-w-0">
             <div className="truncate text-xs font-bold text-slate-900 leading-tight">
-              {partnerDisplayName}
-            </div>
-            <div className="truncate text-[10px] font-semibold text-indigo-600">
               Percetakan Sakinah
             </div>
+            <div className="truncate text-[10px] font-semibold text-indigo-600">
+              Monitoring System
+            </div>
           </div>
-        </div>
+        </Link>
 
         <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => switchPartnerAction()}
-            title="Ganti Kerjasama Mitra"
+            title={`Ganti Mitra (Saat ini: ${partnerDisplayName})`}
             className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 transition"
           >
             <ArrowLeftRight className="h-3 w-3 text-slate-400" />
-            <span className="hidden sm:inline">Ganti</span>
+            <span className="hidden sm:inline truncate max-w-[80px]">{partnerDisplayName}</span>
           </button>
 
           <Link
@@ -161,24 +161,6 @@ export function Sidebar({ partner }: { partner?: Partner }) {
                 </button>
               </div>
 
-              {/* Active Partner Info Box */}
-              <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50/70 p-2.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[10px] font-semibold text-blue-700 uppercase tracking-wider">Mitra Aktif:</span>
-                  <button
-                    type="button"
-                    onClick={() => switchPartnerAction()}
-                    className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 hover:underline"
-                  >
-                    <ArrowLeftRight className="h-2.5 w-2.5" />
-                    <span>Ganti</span>
-                  </button>
-                </div>
-                <div className="mt-1 font-bold text-xs text-slate-900 truncate">
-                  {partnerDisplayName}
-                </div>
-              </div>
-
               {/* Navigation Items in Drawer */}
               <nav className="mt-3 space-y-1">
                 {NAV.map((item) => {
@@ -205,15 +187,33 @@ export function Sidebar({ partner }: { partner?: Partner }) {
               </nav>
             </div>
 
-            {/* Bottom 15 Days Info in Drawer */}
-            <div className="border-t border-slate-100 pt-3">
-              <div className="rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-blue-50/50 p-3 text-xs">
+            {/* Bottom Section in Drawer: Active Partner & Penagihan Berkala */}
+            <div className="border-t border-slate-100 pt-3 space-y-2">
+              {/* Active Partner Info Box */}
+              <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[10px] font-semibold text-blue-700 uppercase tracking-wider">Mitra Aktif:</span>
+                  <button
+                    type="button"
+                    onClick={() => switchPartnerAction()}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 hover:underline"
+                  >
+                    <ArrowLeftRight className="h-2.5 w-2.5" />
+                    <span>Ganti</span>
+                  </button>
+                </div>
+                <div className="mt-1 font-bold text-xs text-slate-900 truncate">
+                  {partnerDisplayName}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-blue-50/50 p-2.5 text-xs">
                 <div className="flex items-center gap-1.5 font-bold text-indigo-950">
                   <CalendarClock className="h-4 w-4 text-indigo-600 shrink-0" />
-                  <span>Siklus 15 Hari</span>
+                  <span>Penagihan Berkala</span>
                 </div>
                 <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
-                  Kerjasama sistem pembayaran per 15 hari di percetakan Sakinah.
+                  Kerjasama sistem pencatatan &amp; penagihan berkala percetakan.
                 </p>
               </div>
             </div>
@@ -287,7 +287,7 @@ export function Sidebar({ partner }: { partner?: Partner }) {
         }`}
       >
         <div>
-          {/* Brand Header */}
+          {/* Brand Header Bersih (Hanya Logo & Brand) */}
           <div
             className={`flex items-center border-b border-slate-100 py-3 transition-all ${
               isCollapsed ? "justify-center px-2" : "justify-between px-3.5"
@@ -339,43 +339,10 @@ export function Sidebar({ partner }: { partner?: Partner }) {
             )}
           </div>
 
-          {/* Active Partner Badge & Switch Button on Desktop */}
-          {!isCollapsed ? (
-            <div className="mx-3 mt-3 rounded-xl border border-blue-100 bg-blue-50/70 p-2.5">
-              <div className="flex items-center justify-between text-[10px]">
-                <span className="font-semibold text-blue-700 uppercase tracking-wider">Mitra Aktif:</span>
-                <button
-                  type="button"
-                  onClick={() => switchPartnerAction()}
-                  className="inline-flex items-center gap-1 font-bold text-blue-700 hover:underline cursor-pointer"
-                  title="Kembali ke Portal & Ganti Kerjasama"
-                >
-                  <ArrowLeftRight className="h-2.5 w-2.5" />
-                  <span>Ganti</span>
-                </button>
-              </div>
-              <div className="mt-1 flex items-center gap-1.5 font-bold text-xs text-slate-900 truncate">
-                <Building2 className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-                <span className="truncate">{partnerDisplayName}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex justify-center mt-2">
-              <button
-                type="button"
-                onClick={() => switchPartnerAction()}
-                title={`Ganti Kerjasama (Saat ini: ${partnerDisplayName})`}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 transition cursor-pointer"
-              >
-                <ArrowLeftRight className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-
           {/* Navigation Items Desktop */}
           <nav
             className={`p-2 space-y-1 ${
-              isCollapsed ? "px-2 py-3" : "px-3 py-2"
+              isCollapsed ? "px-2 py-3" : "p-3"
             }`}
           >
             {NAV.map((item) => {
@@ -415,16 +382,49 @@ export function Sidebar({ partner }: { partner?: Partner }) {
           </nav>
         </div>
 
-        {/* Desktop Bottom Section: Footer / Indicator & Toggle Button */}
-        <div className="border-t border-slate-100 p-2">
-          {/* Partnership Indicator (hanya saat expanded) */}
+        {/* Desktop Bottom Section: Mitra Aktif & Toggle Expand/Collapse */}
+        <div className="border-t border-slate-100 p-2 space-y-2">
+          {/* Active Partner Box (DIPINDAHKAN KE BAWAH SIDEBAR) */}
           {!isCollapsed ? (
-            <div className="mb-2 rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-blue-50/50 p-2.5 text-xs">
+            <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-2.5">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="font-semibold text-blue-700 uppercase tracking-wider">Mitra Aktif:</span>
+                <button
+                  type="button"
+                  onClick={() => switchPartnerAction()}
+                  className="inline-flex items-center gap-1 font-bold text-blue-700 hover:underline cursor-pointer"
+                  title="Kembali ke Portal & Ganti Kerjasama"
+                >
+                  <ArrowLeftRight className="h-2.5 w-2.5" />
+                  <span>Ganti</span>
+                </button>
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 font-bold text-xs text-slate-900 truncate">
+                <Building2 className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                <span className="truncate">{partnerDisplayName}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => switchPartnerAction()}
+                title={`Ganti Mitra (Saat ini: ${partnerDisplayName})`}
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 transition cursor-pointer"
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+          {/* Penagihan Berkala Indicator (hanya saat expanded) */}
+          {!isCollapsed ? (
+            <div className="rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-blue-50/50 p-2 text-xs">
               <div className="flex items-center gap-1.5 font-semibold text-indigo-950">
                 <CalendarClock className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
-                <span className="truncate">Siklus 15 Hari</span>
+                <span className="truncate">Penagihan Berkala</span>
               </div>
-              <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
+              <p className="mt-0.5 text-[10px] leading-relaxed text-slate-500">
                 Kerjasama penagihan berkala percetakan.
               </p>
             </div>

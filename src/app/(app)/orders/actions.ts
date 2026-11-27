@@ -256,7 +256,7 @@ export async function settleCycleOrdersAction(startDate: string, endDate: string
         p_cash: Number(o.cash_paid) || 0,
         p_noncash: newNoncash,
         p_ref: ref,
-        p_note: `Pelunasan kolektif siklus 15 hari oleh ${actor}`,
+        p_note: `Pelunasan kolektif periode oleh ${actor}`,
         p_actor: actor,
       });
     }
@@ -264,7 +264,7 @@ export async function settleCycleOrdersAction(startDate: string, endDate: string
 
   revalidatePath("/orders");
   revalidatePath("/dashboard");
-  return { ok: "Seluruh order dalam siklus 15 hari berhasil ditandai LUNAS!" };
+  return { ok: "Seluruh order dalam periode ini berhasil ditandai LUNAS!" };
 }
 
 /**

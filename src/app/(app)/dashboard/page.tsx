@@ -155,7 +155,7 @@ export default async function DashboardPage() {
             </span>
           </div>
           <p className="mt-1 text-sm text-slate-500">
-            Monitoring produksi, tagihan kerjasama pembayaran 15 harian, dan nota otomatis.
+            Monitoring produksi, tagihan kerjasama pembayaran berkala, dan nota otomatis.
           </p>
         </div>
 
@@ -170,14 +170,14 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Financial Metrics Cards (Siklus 15 Hari, Bulan Ini, Tahun Ini, Belum Lunas) */}
+      {/* Financial Metrics Cards (Periode Berjalan, Bulan Ini, Tahun Ini, Belum Lunas) */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1: Siklus 15 Hari Berjalan (Highlight) */}
+        {/* Card 1: Periode Berjalan (Highlight) */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-5 text-white shadow-md">
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-0.5 text-xs font-medium text-indigo-200 backdrop-blur-xs">
               <CalendarClock className="h-3 w-3" />
-              Siklus 15 Hari ({financials.currentCycle.label})
+              Periode Berjalan ({financials.currentCycle.label})
             </span>
             <span className="text-[11px] text-slate-300">
               {financials.currentCycle.daysRemaining > 0
@@ -312,8 +312,8 @@ export default async function DashboardPage() {
           </div>
 
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
-            <span>Status Kerjasama:</span>
-            <span className="font-semibold text-indigo-600">Tempo 15 Hari</span>
+            <span>Sistem Pembayaran:</span>
+            <span className="font-semibold text-indigo-600">Penagihan Berkala</span>
           </div>
         </div>
       </div>
@@ -473,12 +473,12 @@ export default async function DashboardPage() {
 
         {/* Kolom Kanan: Rekap Siklus 15 Hari & Anggaran (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
-          {/* Card Rekap Siklus 15 Hari */}
+          {/* Card Rekap Periode Penagihan */}
           <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <CalendarClock className="h-4 w-4 text-indigo-600" />
-                <h2 className="font-bold text-slate-900">Rekap Pembayaran 15 Hari</h2>
+                <h2 className="font-bold text-slate-900">Rekap Pembayaran Berkala</h2>
               </div>
               <Link
                 href="/orders?view=nota"
@@ -489,7 +489,7 @@ export default async function DashboardPage() {
             </div>
 
             <p className="mt-2.5 text-xs text-slate-500 leading-relaxed">
-              Daftar rekap tagihan per dua mingguan untuk pencocokan faktur & pembayaran ke percetakan:
+              Daftar rekap tagihan berkala untuk pencocokan faktur &amp; pembayaran ke percetakan:
             </p>
 
             <div className="mt-4 space-y-2.5">
@@ -551,7 +551,7 @@ export default async function DashboardPage() {
                         className="inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700 hover:underline"
                       >
                         <Printer className="h-3 w-3" />
-                        <span>Cetak Semua Nota 15 Hari Ini &rarr;</span>
+                        <span>Cetak Semua Nota Periode Ini &rarr;</span>
                       </Link>
                       <span className="text-slate-400">{cycle.orderCount} Faktur</span>
                     </div>
