@@ -1,20 +1,19 @@
 import "server-only";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import { env } from "@/lib/env";
 
-export async function createClient() {
-  const cookieStore = await cookies();
-  return createServerClient(env.url, env.key, {
-    cookies: {
-      getAll: () => cookieStore.getAll(),
-      setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
-        } catch {
-          // Dipanggil dari Server Component: sesi diperbarui oleh proxy.ts
-        }
-      },
-    },
-  });
+/**
+ * Client Supabase untuk Server Component & Server Action.
+ * Karena aplikasi tanpa login, tidak perlu memproses cookie session setiap request.
+ * Ini membuat query database super cepat tanpa overhead parsing cookie.
+ */
+let serverClient: SupabaseClient<any, "public", any> | null = null;
+
+export async function createClient(): Promise<SupabaseClient<any, "public", any>> {
+  if (!serverClient) {
+    serverClient = createSupabaseClient<any>(env.url, env.key, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+  }
+  return serverClient;
 }

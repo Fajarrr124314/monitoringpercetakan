@@ -1,7 +1,15 @@
 "use client";
-import { createBrowserClient } from "@supabase/ssr";
+
+import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import { env } from "@/lib/env";
 
-export function createClient() {
-  return createBrowserClient(env.url, env.key);
+let browserClient: SupabaseClient<any, "public", any> | null = null;
+
+export function createClient(): SupabaseClient<any, "public", any> {
+  if (!browserClient) {
+    browserClient = createSupabaseClient<any>(env.url, env.key, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+  }
+  return browserClient;
 }
