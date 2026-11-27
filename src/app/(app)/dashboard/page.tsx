@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { paymentInfo, STATUS_COLOR, STATUS_LABEL } from "@/lib/constants";
 import { dateNota, rupiah } from "@/lib/format";
-import type { BudgetUsage, OrderStatus, OrderWithRefs } from "@/lib/types";
+import type { OrderStatus, OrderWithRefs } from "@/lib/types";
 import { StatusBadge } from "@/components/status-badge";
 import { StatusSelect } from "@/components/status-select";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
@@ -49,10 +49,9 @@ export default async function DashboardPage() {
     activeOrdersQuery = activeOrdersQuery.eq("customer_id", activePartner.id);
   }
 
-  const [{ data: recentOrdersData }, { data: allActiveOrdersData }, { data: budgetsData }] = await Promise.all([
+  const [{ data: recentOrdersData }, { data: allActiveOrdersData }] = await Promise.all([
     recentQuery,
     activeOrdersQuery,
-    supabase.rpc("budget_usage"),
   ]);
 
   const recentOrders = (recentOrdersData ?? []) as OrderWithRefs[];
@@ -64,7 +63,6 @@ export default async function DashboardPage() {
     order_date: string;
     status: OrderStatus;
   }[];
-  const budgets = (budgetsData ?? []) as BudgetUsage[];
 
   // Hitung metrik siklus 15 harian, bulanan, dan tahunan
   const financials = calculateDashboardFinancials(allActiveOrders);
@@ -560,53 +558,6 @@ export default async function DashboardPage() {
               })}
             </div>
           </div>
-
-          {/* Card Pemantauan Anggaran (jika ada data budget) */}
-          {budgets.length > 0 && (
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-blue-600" />
-                  <h2 className="font-bold text-slate-900">Plafon Anggaran</h2>
-                </div>
-                <Link href="/anggaran" className="text-xs font-semibold text-blue-600 hover:underline">
-                  Kelola &rarr;
-                </Link>
-              </div>
-
-              <div className="mt-3 space-y-3">
-                {budgets.slice(0, 2).map((b) => {
-                  const sisa = b.amount - b.used;
-                  const pct = b.amount > 0 ? Math.min(100, Math.round((b.used / b.amount) * 100)) : 0;
-                  const over = sisa < 0;
-                  return (
-                    <div key={b.id} className="rounded-xl border border-slate-100 p-3 bg-slate-50/50">
-                      <div className="flex justify-between text-xs">
-                        <b className="text-slate-800">{b.name}</b>
-                        <span className="text-slate-500">{b.order_count} order</span>
-                      </div>
-                      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200/60">
-                        <div
-                          className={`h-full rounded-full transition-all ${
-                            over ? "bg-rose-500" : pct > 80 ? "bg-amber-500" : "bg-blue-600"
-                          }`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <div className="mt-2 flex justify-between text-xs">
-                        <span className="text-slate-600">
-                          Terpakai: <b>{rupiah(b.used)}</b> ({pct}%)
-                        </span>
-                        <span className={over ? "text-rose-600 font-bold" : "text-emerald-700 font-medium"}>
-                          {over ? `Lewat ${rupiah(Math.abs(sisa))}` : `Sisa ${rupiah(sisa)}`}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

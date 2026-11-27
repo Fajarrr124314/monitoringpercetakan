@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { canEditOrder } from "@/lib/constants";
 import { meters, toLocalInput } from "@/lib/format";
 import { getOrderFull } from "@/lib/orders";
-import type { BudgetUsage, Customer, Product, Settings } from "@/lib/types";
+import type { Customer, Product, Settings } from "@/lib/types";
 import { OrderForm, type ItemRow } from "@/components/order-form";
 import { saveOrderAction } from "../../actions";
 
@@ -19,10 +19,9 @@ export default async function EditOrderPage({ params }: { params: Promise<{ id: 
   const { order, items } = full;
   if (!canEditOrder(order.status)) redirect(`/orders/${id}`);
 
-  const [{ data: customers }, { data: products }, { data: budgets }, { data: settings }] = await Promise.all([
+  const [{ data: customers }, { data: products }, { data: settings }] = await Promise.all([
     supabase.from("customers").select("id, name, city").order("name"),
     supabase.from("products").select("*").order("name"),
-    supabase.rpc("budget_usage"),
     supabase.from("settings").select("default_tax_percent").eq("id", 1).single<Pick<Settings, "default_tax_percent">>(),
   ]);
 
@@ -55,7 +54,6 @@ export default async function EditOrderPage({ params }: { params: Promise<{ id: 
         initial={initial}
         customers={(customers ?? []) as Customer[]}
         products={(products ?? []) as Product[]}
-        budgets={(budgets ?? []) as BudgetUsage[]}
         taxDefault={Number(settings?.default_tax_percent ?? 0)}
       />
     </div>

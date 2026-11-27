@@ -46,13 +46,13 @@ const emptyRow = (key: string): ItemRow => ({
 });
 
 export function OrderForm({
-  action, initial, customers, products, budgets, taxDefault,
+  action, initial, customers, products, budgets = [], taxDefault,
 }: {
   action: (state: FormState, formData: FormData) => Promise<FormState>;
   initial: OrderFormInitial;
   customers: Pick<Customer, "id" | "name" | "city">[];
   products: Product[];
-  budgets: BudgetUsage[];
+  budgets?: BudgetUsage[];
   taxDefault: number;
 }) {
   const [customerId, setCustomerId] = useState(initial.customer_id);

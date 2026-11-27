@@ -9,7 +9,6 @@ import {
   PlusCircle,
   Users,
   Tag,
-  Wallet,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -29,7 +28,6 @@ const NAV = [
   { href: "/orders/new", label: "Order Baru", icon: PlusCircle, highlight: true },
   { href: "/pelanggan", label: "Pelanggan", icon: Users },
   { href: "/harga", label: "Daftar Harga", icon: Tag },
-  { href: "/anggaran", label: "Anggaran", icon: Wallet },
   { href: "/pengaturan", label: "Pengaturan", icon: Settings },
 ];
 

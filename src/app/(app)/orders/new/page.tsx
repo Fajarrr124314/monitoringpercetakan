@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { toLocalInput } from "@/lib/format";
-import type { BudgetUsage, Customer, Product, Settings } from "@/lib/types";
+import type { Customer, Product, Settings } from "@/lib/types";
 import { OrderForm } from "@/components/order-form";
 import { saveOrderAction } from "../actions";
 import { getActivePartner } from "@/lib/partners";
@@ -12,10 +12,9 @@ export default async function NewOrderPage() {
   const supabase = await createClient();
   const activePartner = await getActivePartner();
 
-  const [{ data: customers }, { data: products }, { data: budgets }, { data: settings }] = await Promise.all([
+  const [{ data: customers }, { data: products }, { data: settings }] = await Promise.all([
     supabase.from("customers").select("id, name, city").order("name"),
     supabase.from("products").select("*").order("name"),
-    supabase.rpc("budget_usage"),
     supabase.from("settings").select("default_tax_percent").eq("id", 1).single<Pick<Settings, "default_tax_percent">>(),
   ]);
 
@@ -47,7 +46,6 @@ export default async function NewOrderPage() {
         initial={initial}
         customers={(customers ?? []) as Customer[]}
         products={(products ?? []) as Product[]}
-        budgets={(budgets ?? []) as BudgetUsage[]}
         taxDefault={Number(settings?.default_tax_percent ?? 0)}
       />
     </div>
