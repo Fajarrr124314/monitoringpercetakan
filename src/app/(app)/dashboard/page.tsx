@@ -422,9 +422,12 @@ export default async function DashboardPage() {
                 <CalendarClock className="h-4 w-4 text-indigo-600" />
                 <h2 className="font-bold text-slate-900">Rekap Pembayaran 15 Hari</h2>
               </div>
-              <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700">
-                Term 15 Hari
-              </span>
+              <Link
+                href="/rekap"
+                className="text-xs font-semibold text-indigo-600 hover:underline"
+              >
+                Cetak Rekap &rarr;
+              </Link>
             </div>
 
             <p className="mt-2.5 text-xs text-slate-500 leading-relaxed">
@@ -482,6 +485,17 @@ export default async function DashboardPage() {
                           )}
                         </div>
                       </div>
+                    </div>
+
+                    <div className="mt-2 pt-2 border-t border-slate-200/50 flex items-center justify-between text-[11px]">
+                      <Link
+                        href={`/rekap?start=${cycle.startDate}&end=${cycle.endDate}`}
+                        className="inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                      >
+                        <Printer className="h-3 w-3" />
+                        <span>Cetak Rekap &amp; Semua Faktur &rarr;</span>
+                      </Link>
+                      <span className="text-slate-400">{cycle.orderCount} Faktur</span>
                     </div>
                   </div>
                 );

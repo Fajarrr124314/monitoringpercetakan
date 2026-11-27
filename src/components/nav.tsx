@@ -10,11 +10,13 @@ import {
   Tag,
   Wallet,
   Settings,
+  CalendarClock,
 } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/orders", label: "Order & Nota", icon: FileText },
+  { href: "/rekap", label: "Rekap 15 Hari", icon: CalendarClock },
   { href: "/orders/new", label: "Order Baru", icon: PlusCircle, highlight: true },
   { href: "/pelanggan", label: "Pelanggan", icon: Users },
   { href: "/harga", label: "Daftar Harga", icon: Tag },
