@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "logo": "node scripts/set-logo.mjs"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.9.2",

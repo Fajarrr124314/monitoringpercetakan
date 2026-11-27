@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Semua halaman butuh login, jadi dirender per-request (model caching klasik).
   turbopack: {
     rules: {
       "*.css": {
