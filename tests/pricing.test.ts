@@ -3,6 +3,8 @@ import { calcTax, itemSubtotal, orderTotals } from "@/lib/pricing";
 import { terbilang } from "@/lib/terbilang";
 import { meters, money, money2 } from "@/lib/format";
 
+import { convertDimension, toCm } from "@/components/order-form";
+
 const flexy = { pricingUnit: "m2" as const, unitPrice: 20000, designFee: 0, otherFee: 0 };
 
 describe("hitung budget", () => {
@@ -51,5 +53,19 @@ describe("format nota", () => {
     expect(money(81000)).toBe("81,000");
     expect(money2(101000)).toBe("101,000.00");
     expect(meters(405)).toBe("4.05");
+  });
+
+  it("konversi satuan ukuran (cm, m, mm)", () => {
+    // toCm conversion
+    expect(toCm("100", "cm")).toBe(100);
+    expect(toCm("1.5", "m")).toBe(150);
+    expect(toCm("1500", "mm")).toBe(150);
+
+    // convertDimension antar satuan
+    expect(convertDimension("1.5", "m", "cm")).toBe("150");
+    expect(convertDimension("150", "cm", "mm")).toBe("1500");
+    expect(convertDimension("1500", "mm", "m")).toBe("1.5");
+    expect(convertDimension("80", "cm", "m")).toBe("0.8");
+    expect(convertDimension("50", "mm", "cm")).toBe("5");
   });
 });

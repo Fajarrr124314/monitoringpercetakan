@@ -26,10 +26,19 @@ export default async function EditOrderPage({ params }: { params: Promise<{ id: 
   ]);
 
   const rows: ItemRow[] = items.map((it) => ({
-    key: it.id, product_id: it.product_id, description: it.description, notes: it.notes,
-    qty: String(it.qty), width_m: meters(it.width_cm), height_m: meters(it.height_cm),
+    key: it.id,
+    product_id: it.product_id,
+    description: it.description,
+    notes: it.notes,
+    qty: String(it.qty),
+    width: String(it.width_cm),
+    height: String(it.height_cm),
+    unit_dim: "cm",
+    width_m: meters(it.width_cm),
+    height_m: meters(it.height_cm),
     unit_price: it.unit_price !== it.list_price ? String(it.unit_price) : "",
-    design_fee: String(it.design_fee), other_fee: String(it.other_fee),
+    design_fee: String(it.design_fee),
+    other_fee: String(it.other_fee),
   }));
 
   const initial = {
