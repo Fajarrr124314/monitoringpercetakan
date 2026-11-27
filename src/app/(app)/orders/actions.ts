@@ -266,3 +266,55 @@ export async function settleCycleOrdersAction(startDate: string, endDate: string
   revalidatePath("/dashboard");
   return { ok: "Seluruh order dalam siklus 15 hari berhasil ditandai LUNAS!" };
 }
+
+/**
+ * Ubah status produksi secara instan dari dropdown
+ */
+export async function updateProductionStatusAction(
+  id: string,
+  newStatus: OrderStatus,
+  actor: string = "Percetakan"
+): Promise<FormState> {
+  const supabase = await createClient();
+
+  const { data: order, error: fetchErr } = await supabase
+    .from("orders")
+    .select("id, status, order_no, issued_at")
+    .eq("id", id)
+    .single();
+
+  if (fetchErr || !order) return { error: "Order tidak ditemukan" };
+  if (order.status === newStatus) return { ok: "Status tidak berubah" };
+
+  const updateData: Record<string, any> = {
+    status: newStatus,
+    updated_at: new Date().toISOString(),
+  };
+
+  // Jika sebelumnya draft dan sekarang diaktifkan, buatkan nomor nota jika belum ada
+  if (order.status === "draft" && newStatus !== "batal" && !order.order_no) {
+    const { data: nextNo } = await supabase.rpc("next_order_no");
+    if (nextNo) {
+      updateData.order_no = nextNo;
+      updateData.issued_at = new Date().toISOString();
+    }
+  }
+
+  const { error: updateErr } = await supabase.from("orders").update(updateData).eq("id", id);
+  if (updateErr) return { error: friendlyError(updateErr, "Gagal mengubah status produksi") };
+
+  // Catat log perubahan status
+  await supabase.from("order_logs").insert({
+    order_id: id,
+    action: "status",
+    from_status: order.status,
+    to_status: newStatus,
+    note: `Status diubah menjadi ${newStatus.toUpperCase()}`,
+    actor_name: actor,
+  });
+
+  revalidatePath("/orders");
+  revalidatePath("/dashboard");
+  revalidatePath(`/orders/${id}`);
+  return { ok: `Status produksi berhasil diubah menjadi ${newStatus.toUpperCase()}` };
+}

@@ -11,6 +11,7 @@ import { ActionForm, SubmitButton } from "@/components/form";
 import { NotaHtml } from "@/components/nota-html";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { PayBadge, StatusBadge } from "@/components/status-badge";
+import { StatusSelect } from "@/components/status-select";
 import { addCommentAction, deleteFileAction, deleteOrderAction, quickSettleOrderAction, recordPaymentAction, setStatusAction, uploadFileAction } from "../actions";
 import { CheckCircle2, CreditCard, FileText, ArrowLeft, Trash2 } from "lucide-react";
 
@@ -54,7 +55,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <h1 className="page-title font-mono">{order.order_no ?? "(Draft)"}</h1>
-            <StatusBadge status={order.status} />
+            <StatusSelect orderId={order.id} currentStatus={order.status} />
             <PayBadge label={pay.label} />
           </div>
           <p className="text-sm text-slate-500 mt-0.5">

@@ -5,6 +5,7 @@ import { paymentInfo, STATUS_LABEL } from "@/lib/constants";
 import { dateNota, rupiah } from "@/lib/format";
 import type { OrderItem, OrderStatus, OrderWithRefs, Settings } from "@/lib/types";
 import { PayBadge, StatusBadge } from "@/components/status-badge";
+import { StatusSelect } from "@/components/status-select";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { OrderActionsMenu } from "@/components/order-actions-menu";
 import { PrintButton } from "@/components/print-button";
@@ -402,7 +403,7 @@ export default async function OrdersPage({
                           {o.title && <div className="text-xs text-slate-400 line-clamp-1">{o.title}</div>}
                         </td>
                         <td>
-                          <StatusBadge status={o.status} />
+                          <StatusSelect orderId={o.id} currentStatus={o.status} />
                         </td>
                         <td>
                           <PayBadge label={pay.label} />

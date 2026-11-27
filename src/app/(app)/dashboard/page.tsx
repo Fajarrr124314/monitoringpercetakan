@@ -5,6 +5,7 @@ import { paymentInfo, STATUS_COLOR, STATUS_LABEL } from "@/lib/constants";
 import { dateNota, rupiah } from "@/lib/format";
 import type { BudgetUsage, OrderStatus, OrderWithRefs } from "@/lib/types";
 import { StatusBadge } from "@/components/status-badge";
+import { StatusSelect } from "@/components/status-select";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { calculateDashboardFinancials } from "@/lib/cycles";
 import { OrderActionsMenu } from "@/components/order-actions-menu";
@@ -389,7 +390,7 @@ export default async function DashboardPage() {
                             {o.title && <div className="text-xs text-slate-400 line-clamp-1">{o.title}</div>}
                           </td>
                           <td>
-                            <StatusBadge status={o.status} />
+                            <StatusSelect orderId={o.id} currentStatus={o.status} compact />
                           </td>
                           <td className="text-right font-semibold text-slate-900 whitespace-nowrap">
                             {rupiah(o.total)}
